@@ -12,7 +12,13 @@
 
 options(stringsAsFactors = FALSE)
 
-SHOW_PLOTS <- interactive() && !identical(tolower(Sys.getenv("SHOW_PLOTS")), "false")
+show_plots_env <- tolower(trimws(Sys.getenv("SHOW_PLOTS", unset = "")))
+rstudio_session <- identical(Sys.getenv("RSTUDIO"), "1")
+SHOW_PLOTS <- show_plots_env %in% c("true", "1", "yes") ||
+  ((show_plots_env == "" || show_plots_env == "auto") && interactive())
+SHOW_PLOTS <- SHOW_PLOTS && (interactive() || rstudio_session)
+cat("SHOW_PLOTS:", SHOW_PLOTS, "\n")
+cat("Interactive session:", interactive(), "\n")
 set.seed(20260620)
 
 `%||%` <- function(x, y) if (is.null(x)) y else x
@@ -399,6 +405,18 @@ theme_publication <- function(plot_type = "default") {
   )
 }
 
+can_preview_plots <- function() interactive() || rstudio_session
+
+preview_figure <- function(plot_fun, force = FALSE) {
+  if (!force && !SHOW_PLOTS) return(invisible(FALSE))
+  if (!can_preview_plots()) {
+    message("Plot preview skipped: no interactive graphics session is available.")
+    return(invisible(FALSE))
+  }
+  plot_fun()
+  invisible(TRUE)
+}
+
 save_figure <- function(filename, plot_fun, width = 10, height = 7, dpi = publication_style$dpi) {
   grDevices::png(filename, width = width, height = height, units = "in", res = dpi)
   tryCatch(plot_fun(), error = function(e) {
@@ -406,7 +424,7 @@ save_figure <- function(filename, plot_fun, width = 10, height = 7, dpi = public
     stop(e)
   })
   if (grDevices::dev.cur() > 1) grDevices::dev.off()
-  if (SHOW_PLOTS) plot_fun()
+  preview_figure(plot_fun)
   invisible(filename)
 }
 
@@ -637,6 +655,11 @@ figure_files <- list(
   list(name = "figure_07_spearman_heatmap.png", fun = plot_corr_heatmap, width = 11, height = 8.5),
   list(name = "figure_08_outlier_boxplot.png", fun = plot_outlier_box, width = 11, height = 7.5)
 )
+
+preview_all_figures <- function() {
+  invisible(lapply(figure_files, function(fig) preview_figure(fig$fun, force = TRUE)))
+}
+
 for (fig in figure_files) save_figure(file.path(figures_dir, fig$name), fig$fun, fig$width, fig$height)
 
 table_text <- function(tbl, max_rows = 20) {

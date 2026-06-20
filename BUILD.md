@@ -66,7 +66,18 @@ cd week01-eda/assignment
 Rscript Sprint01_BasilEmeokoro.R
 ```
 
-In RStudio, open `week01-eda/assignment/Sprint01_BasilEmeokoro.R` and use Source. Interactive RStudio sessions display plots in the Plots pane by default while still exporting PNG and PDF outputs.
+In RStudio, open `week01-eda/assignment/Sprint01_BasilEmeokoro.R` and use Source. To force plot previews while still exporting PNG and PDF outputs:
+
+```r
+Sys.setenv(SHOW_PLOTS = "true")
+source("week01-eda/assignment/Sprint01_BasilEmeokoro.R")
+```
+
+After sourcing, all eight figures can also be redrawn on demand in the RStudio Plots pane:
+
+```r
+preview_all_figures()
+```
 
 To suppress plot-pane rendering in an interactive RStudio session:
 
