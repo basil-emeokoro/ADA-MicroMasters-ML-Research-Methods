@@ -1,0 +1,574 @@
+###############################################################################
+# ADA Global Academy MicroMasters - Sprint 01 Assignment
+# Child Undernutrition in Nigeria: WAZ and WHZ EDA using NDHS 2024
+# Author: Basil Emeokoro
+#
+# This script is self-contained in base R. It creates cleaned variables, tables,
+# eight figures, and a PDF report in the Assignment folder.
+###############################################################################
+
+options(stringsAsFactors = FALSE)
+
+`%||%` <- function(x, y) if (is.null(x)) y else x
+
+script_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)
+script_path <- if (length(script_arg) > 0) sub("^--file=", "", script_arg[1]) else NULL
+assignment_dir <- normalizePath(dirname(script_path %||% getwd()), winslash = "/", mustWork = FALSE)
+if (!dir.exists(assignment_dir) || basename(assignment_dir) != "Assignment") {
+  assignment_dir <- normalizePath(getwd(), winslash = "/", mustWork = FALSE)
+}
+root_dir <- normalizePath(file.path(assignment_dir, ".."), winslash = "/", mustWork = FALSE)
+tasks_dir <- file.path(root_dir, "Tasks")
+legacy_tasks_dir <- file.path(root_dir, "..", "Tasks")
+datasets_dir <- file.path(root_dir, "resources", "datasets")
+
+figures_dir <- file.path(assignment_dir, "figures")
+tables_dir <- file.path(assignment_dir, "tables")
+outputs_dir <- file.path(assignment_dir, "outputs")
+report_dir <- file.path(assignment_dir, "report")
+dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(tables_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(outputs_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(report_dir, showWarnings = FALSE, recursive = TRUE)
+
+dataset_candidates <- c(
+  file.path(assignment_dir, "NGKR8BFL (1).csv"),
+  file.path(assignment_dir, "NGKR8BFL.csv"),
+  file.path(datasets_dir, "NGKR8BFL (1).csv"),
+  file.path(datasets_dir, "NGKR8BFL.csv"),
+  file.path(tasks_dir, "NGKR8BFL (1).csv"),
+  file.path(tasks_dir, "NGKR8BFL.csv"),
+  file.path(legacy_tasks_dir, "NGKR8BFL (1).csv"),
+  file.path(legacy_tasks_dir, "NGKR8BFL.csv")
+)
+csv_file <- dataset_candidates[file.exists(dataset_candidates)][1]
+if (is.na(csv_file)) stop("Could not find NGKR8BFL CSV in Assignment or Tasks folder.")
+
+needed_vars <- c("hw70", "hw71", "hw72", "hw1", "b4", "b5", "m4", "v024", "v025",
+                 "v106", "v701", "v130", "v190", "v136", "v137", "v005")
+header <- names(read.csv(csv_file, nrows = 1, check.names = FALSE))
+missing_cols <- setdiff(needed_vars, header)
+if (length(missing_cols) > 0) stop("Missing columns in CSV: ", paste(missing_cols, collapse = ", "))
+col_classes <- ifelse(header %in% needed_vars, "numeric", "NULL")
+
+df_raw <- read.csv(csv_file, colClasses = col_classes, check.names = FALSE)
+
+clean_z <- function(x) {
+  x <- as.numeric(x)
+  ifelse(is.na(x) | x >= 9996, NA_real_, x / 100)
+}
+
+recode_numeric <- function(x, labels, default = NA_character_) {
+  out <- rep(default, length(x))
+  for (code in names(labels)) out[!is.na(x) & x == as.numeric(code)] <- labels[[code]]
+  out
+}
+
+pct <- function(x, digits = 1) round(100 * x, digits)
+
+weighted_pct <- function(condition, weight = NULL) {
+  ok <- !is.na(condition)
+  if (!any(ok)) return(NA_real_)
+  if (is.null(weight)) return(mean(condition[ok]) * 100)
+  w <- weight[ok]
+  sum(w * condition[ok], na.rm = TRUE) / sum(w, na.rm = TRUE) * 100
+}
+
+skewness_base <- function(x) {
+  x <- x[!is.na(x)]
+  if (length(x) < 3) return(NA_real_)
+  m <- mean(x)
+  s <- stats::sd(x)
+  if (is.na(s) || s == 0) return(NA_real_)
+  mean((x - m)^3) / s^3
+}
+
+mean_se <- function(x) {
+  x <- x[!is.na(x)]
+  n <- length(x)
+  if (n == 0) return(c(mean = NA_real_, se = NA_real_))
+  c(mean = mean(x), se = stats::sd(x) / sqrt(n))
+}
+
+format_num <- function(x, digits = 2) {
+  ifelse(is.na(x), "NA", formatC(x, format = "f", digits = digits, big.mark = ","))
+}
+
+wrap_lines <- function(text, width = 92) unlist(strwrap(text, width = width))
+
+df <- within(df_raw, {
+  haz <- clean_z(hw70)
+  waz <- clean_z(hw71)
+  whz <- clean_z(hw72)
+  age_months <- hw1
+  sex <- factor(recode_numeric(b4, c(`1` = "Male", `2` = "Female")))
+  child_alive <- factor(recode_numeric(b5, c(`0` = "No", `1` = "Yes")))
+  breastfeeding <- factor(recode_numeric(m4, c(`93` = "Never", `94` = "Still breastfeeding", `95` = "Stopped")),
+                          levels = c("Never", "Still breastfeeding", "Stopped"))
+  region <- factor(recode_numeric(v024, c(`1` = "North west", `2` = "North east", `3` = "North central",
+                                          `4` = "South east", `5` = "South south", `6` = "South west")),
+                   levels = c("North west", "North east", "North central", "South east", "South south", "South west"))
+  residence <- factor(recode_numeric(v025, c(`1` = "Urban", `2` = "Rural")),
+                      levels = c("Urban", "Rural"))
+  mother_educ <- factor(recode_numeric(v106, c(`0` = "None", `1` = "Primary", `2` = "Secondary", `3` = "Higher")),
+                        levels = c("None", "Primary", "Secondary", "Higher"), ordered = TRUE)
+  father_educ <- factor(recode_numeric(ifelse(v701 == 8, NA, v701),
+                                       c(`0` = "None", `1` = "Primary", `2` = "Secondary", `3` = "Higher")),
+                        levels = c("None", "Primary", "Secondary", "Higher"), ordered = TRUE)
+  religion_raw <- recode_numeric(v130, c(`1` = "Catholic", `2` = "Other Christian", `3` = "Islam",
+                                         `4` = "Traditionalist", `96` = "Other"))
+  religion <- factor(ifelse(religion_raw %in% c("Catholic", "Other Christian"), "Christianity",
+                            ifelse(religion_raw == "Islam", "Islam",
+                                   ifelse(is.na(religion_raw), NA, "Other"))),
+                     levels = c("Christianity", "Islam", "Other"))
+  wealth <- factor(recode_numeric(v190, c(`1` = "Poorest", `2` = "Poorer", `3` = "Middle",
+                                          `4` = "Richer", `5` = "Richest")),
+                   levels = c("Poorest", "Poorer", "Middle", "Richer", "Richest"), ordered = TRUE)
+  household_size <- v136
+  under5_children <- v137
+  sample_weight <- v005 / 1000000
+})
+
+total_rows <- nrow(df)
+valid_waz <- sum(!is.na(df$waz))
+valid_whz <- sum(!is.na(df$whz))
+missing_waz_pct <- pct(mean(is.na(df$waz)))
+missing_whz_pct <- pct(mean(is.na(df$whz)))
+
+cat("Total rows:", total_rows, "\n")
+cat("Valid WAZ observations:", valid_waz, "\n")
+cat("Valid WHZ observations:", valid_whz, "\n")
+cat("Missing WAZ (%):", missing_waz_pct, "\n")
+cat("Missing WHZ (%):", missing_whz_pct, "\n")
+
+analysis_vars <- c("haz", "waz", "whz", "age_months", "sex", "child_alive", "breastfeeding",
+                   "region", "residence", "mother_educ", "father_educ", "religion", "wealth",
+                   "household_size", "under5_children", "sample_weight")
+missing_table <- data.frame(
+  Variable = analysis_vars,
+  Missing_N = sapply(df[analysis_vars], function(x) sum(is.na(x))),
+  Missing_Percent = sapply(df[analysis_vars], function(x) pct(mean(is.na(x)), 2)),
+  stringsAsFactors = FALSE
+)
+missing_table <- missing_table[order(-missing_table$Missing_Percent, missing_table$Variable), ]
+
+summary_stats <- data.frame(
+  Outcome = c("WAZ", "WHZ"),
+  Mean = c(mean(df$waz, na.rm = TRUE), mean(df$whz, na.rm = TRUE)),
+  Median = c(stats::median(df$waz, na.rm = TRUE), stats::median(df$whz, na.rm = TRUE)),
+  SD = c(stats::sd(df$waz, na.rm = TRUE), stats::sd(df$whz, na.rm = TRUE)),
+  Min = c(min(df$waz, na.rm = TRUE), min(df$whz, na.rm = TRUE)),
+  Max = c(max(df$waz, na.rm = TRUE), max(df$whz, na.rm = TRUE)),
+  Skewness = c(skewness_base(df$waz), skewness_base(df$whz))
+)
+summary_stats[-1] <- lapply(summary_stats[-1], round, 3)
+
+prevalence_table <- data.frame(
+  Indicator = c("Underweight (WAZ < -2)", "Severe underweight (WAZ < -3)",
+                "Wasting (WHZ < -2)", "Severe wasting (WHZ < -3)"),
+  Valid_N = c(sum(!is.na(df$waz)), sum(!is.na(df$waz)), sum(!is.na(df$whz)), sum(!is.na(df$whz))),
+  Percent = round(c(weighted_pct(df$waz < -2, df$sample_weight),
+                    weighted_pct(df$waz < -3, df$sample_weight),
+                    weighted_pct(df$whz < -2, df$sample_weight),
+                    weighted_pct(df$whz < -3, df$sample_weight)), 2)
+)
+
+comparison_table <- data.frame(
+  Indicator = c("Stunting (HAZ < -2)", "Underweight (WAZ < -2)", "Wasting (WHZ < -2)"),
+  Outcome = c("HAZ", "WAZ", "WHZ"),
+  Valid_N = c(sum(!is.na(df$haz)), sum(!is.na(df$waz)), sum(!is.na(df$whz))),
+  Percent = round(c(weighted_pct(df$haz < -2, df$sample_weight),
+                    weighted_pct(df$waz < -2, df$sample_weight),
+                    weighted_pct(df$whz < -2, df$sample_weight)), 2)
+)
+comparison_table <- comparison_table[order(-comparison_table$Percent), ]
+
+group_prev <- function(var_name, label) {
+  g <- df[[var_name]]
+  levels_use <- if (is.factor(g)) levels(g) else sort(unique(g[!is.na(g)]))
+  out <- do.call(rbind, lapply(levels_use, function(level) {
+    idx <- !is.na(g) & g == level & !is.na(df$waz)
+    data.frame(Grouping = label, Category = as.character(level), Valid_N = sum(idx),
+               Underweight_Percent = round(weighted_pct(df$waz[idx] < -2, df$sample_weight[idx]), 2))
+  }))
+  out
+}
+
+underweight_by_group <- rbind(
+  group_prev("region", "Region"),
+  group_prev("residence", "Residence"),
+  group_prev("wealth", "Wealth quintile"),
+  group_prev("mother_educ", "Mother's education"),
+  group_prev("religion", "Religion")
+)
+
+cor_data <- data.frame(
+  WAZ = df$waz,
+  WHZ = df$whz,
+  Wealth = as.numeric(df$wealth),
+  Mothers_Education = as.numeric(df$mother_educ),
+  Household_Size = df$household_size,
+  Under5_Children = df$under5_children
+)
+cor_matrix <- stats::cor(cor_data, method = "spearman", use = "pairwise.complete.obs")
+pair_grid <- utils::combn(colnames(cor_matrix), 2)
+ranked_pairs <- data.frame(
+  Variable_1 = pair_grid[1, ],
+  Variable_2 = pair_grid[2, ],
+  Spearman_rho = mapply(function(a, b) cor_matrix[a, b], pair_grid[1, ], pair_grid[2, ])
+)
+ranked_pairs$Abs_rho <- abs(ranked_pairs$Spearman_rho)
+ranked_pairs <- ranked_pairs[order(-ranked_pairs$Abs_rho), ]
+ranked_pairs$Spearman_rho <- round(ranked_pairs$Spearman_rho, 3)
+ranked_pairs$Abs_rho <- round(ranked_pairs$Abs_rho, 3)
+
+strongest_for <- function(outcome) {
+  candidates <- setdiff(colnames(cor_matrix), c("WAZ", "WHZ"))
+  vals <- cor_matrix[outcome, candidates]
+  candidates[which.max(abs(vals))]
+}
+strongest_waz <- strongest_for("WAZ")
+strongest_whz <- strongest_for("WHZ")
+
+flag_outliers <- function(x) {
+  qs <- stats::quantile(x, c(0.25, 0.75), na.rm = TRUE, names = FALSE)
+  iqr <- qs[2] - qs[1]
+  iqr_flag <- !is.na(x) & (x < qs[1] - 1.5 * iqr | x > qs[2] + 1.5 * iqr)
+  z <- as.numeric(scale(x))
+  z_flag <- !is.na(z) & abs(z) > 3
+  list(iqr = iqr_flag, z = z_flag)
+}
+waz_flags <- flag_outliers(df$waz)
+whz_flags <- flag_outliers(df$whz)
+
+outlier_summary <- data.frame(
+  Variable = c("WAZ", "WHZ"),
+  Valid_N = c(sum(!is.na(df$waz)), sum(!is.na(df$whz))),
+  IQR_Flagged = c(sum(waz_flags$iqr), sum(whz_flags$iqr)),
+  IQR_Percent = round(c(mean(waz_flags$iqr[!is.na(df$waz)]) * 100,
+                        mean(whz_flags$iqr[!is.na(df$whz)]) * 100), 2),
+  Z_Flagged = c(sum(waz_flags$z), sum(whz_flags$z)),
+  Z_Percent = round(c(mean(waz_flags$z[!is.na(df$waz)]) * 100,
+                      mean(whz_flags$z[!is.na(df$whz)]) * 100), 2)
+)
+
+main_regions <- function(flag) {
+  tab <- sort(table(df$region[flag]), decreasing = TRUE)
+  if (length(tab) == 0) return("None")
+  paste(names(tab)[seq_len(min(2, length(tab)))], collapse = ", ")
+}
+
+decision_table <- data.frame(
+  Variable = c("WAZ", "WHZ"),
+  IQR_Flagged = outlier_summary$IQR_Flagged,
+  Percent_Flagged = outlier_summary$IQR_Percent,
+  Main_Regions = c(main_regions(waz_flags$iqr), main_regions(whz_flags$iqr)),
+  Decision = c("Keep", "Keep"),
+  Reason = c("Anthropometric extremes are plausible child-health findings after DHS invalid codes were removed.",
+             "Anthropometric extremes are plausible child-health findings after DHS invalid codes were removed.")
+)
+
+write.csv(missing_table, file.path(tables_dir, "table_01_missing_values.csv"), row.names = FALSE)
+write.csv(summary_stats, file.path(tables_dir, "table_02_waz_whz_summary.csv"), row.names = FALSE)
+write.csv(prevalence_table, file.path(tables_dir, "table_03_national_prevalence.csv"), row.names = FALSE)
+write.csv(comparison_table, file.path(tables_dir, "table_04_haz_waz_whz_comparison.csv"), row.names = FALSE)
+write.csv(underweight_by_group, file.path(tables_dir, "table_05_underweight_by_group.csv"), row.names = FALSE)
+write.csv(round(cor_matrix, 3), file.path(tables_dir, "table_06_spearman_matrix.csv"))
+write.csv(ranked_pairs, file.path(tables_dir, "table_07_ranked_correlation_pairs.csv"), row.names = FALSE)
+write.csv(outlier_summary, file.path(tables_dir, "table_08_outlier_summary.csv"), row.names = FALSE)
+write.csv(decision_table, file.path(tables_dir, "table_09_outlier_decision.csv"), row.names = FALSE)
+
+ggsave <- function(filename, plot_fun, width = 8, height = 6, dpi = 300) {
+  grDevices::png(filename, width = width, height = height, units = "in", res = dpi)
+  on.exit(grDevices::dev.off(), add = TRUE)
+  plot_fun()
+}
+
+draw_subtitle <- function(main, sub) title(main = main, sub = sub, cex.main = 1.1, cex.sub = 0.85)
+
+plot_waz_hist <- function() {
+  hist(df$waz, breaks = 40, col = "#9ecae1", border = "white",
+       xlab = "Weight-for-age z-score (WAZ)", ylab = "Number of children",
+       main = "Figure 1. Distribution of WAZ")
+  abline(v = c(-2, -3), col = c("#d7301f", "#7f0000"), lwd = 2, lty = c(2, 3))
+  legend("topright", legend = c("-2 underweight cutoff", "-3 severe cutoff"), lty = c(2, 3),
+         col = c("#d7301f", "#7f0000"), bty = "n")
+  title(sub = paste0("Nigeria NDHS 2024; underweight prevalence = ",
+                     format_num(prevalence_table$Percent[1], 1), "%"))
+}
+
+plot_whz_hist <- function() {
+  hist(df$whz, breaks = 40, col = "#a1d99b", border = "white",
+       xlab = "Weight-for-height z-score (WHZ)", ylab = "Number of children",
+       main = "Figure 2. Distribution of WHZ")
+  abline(v = c(-2, -3), col = c("#d7301f", "#7f0000"), lwd = 2, lty = c(2, 3))
+  legend("topright", legend = c("-2 wasting cutoff", "-3 severe cutoff"), lty = c(2, 3),
+         col = c("#d7301f", "#7f0000"), bty = "n")
+  title(sub = paste0("Nigeria NDHS 2024; wasting prevalence = ",
+                     format_num(prevalence_table$Percent[3], 1), "%"))
+}
+
+plot_waz_region_box <- function() {
+  med <- tapply(df$waz, df$region, median, na.rm = TRUE)
+  ordered_region <- names(sort(med))
+  boxplot(waz ~ factor(region, levels = ordered_region), data = df, las = 2,
+          col = "#fdd0a2", border = "#636363",
+          xlab = "Region sorted from worst to best median WAZ",
+          ylab = "Weight-for-age z-score (WAZ)",
+          main = "Figure 3. WAZ by region")
+  abline(h = -2, col = "#d7301f", lwd = 2, lty = 2)
+  title(sub = "Nigeria NDHS 2024; red dashed line marks underweight cutoff")
+}
+
+plot_whz_wealth_violin <- function() {
+  vals <- split(df$whz, df$wealth)
+  plot(NA, xlim = c(0.5, length(vals) + 0.5), ylim = range(df$whz, na.rm = TRUE),
+       xaxt = "n", xlab = "Wealth quintile", ylab = "Weight-for-height z-score (WHZ)",
+       main = "Figure 4. WHZ by wealth quintile")
+  axis(1, seq_along(vals), names(vals), las = 2)
+  for (i in seq_along(vals)) draw_violin(vals[[i]], i, col = "#c7e9c0")
+  abline(h = -2, col = "#d7301f", lwd = 2, lty = 2)
+  title(sub = "Nigeria NDHS 2024; red dashed line marks wasting cutoff")
+}
+
+plot_waz_breastfeeding_violin <- function() {
+  vals <- split(df$waz, df$breastfeeding)
+  plot(NA, xlim = c(0.5, length(vals) + 0.5), ylim = range(df$waz, na.rm = TRUE),
+       xaxt = "n", xlab = "Breastfeeding status", ylab = "Weight-for-age z-score (WAZ)",
+       main = "Figure 5. WAZ by breastfeeding status")
+  axis(1, seq_along(vals), names(vals), las = 2)
+  for (i in seq_along(vals)) draw_violin(vals[[i]], i, col = "#fdae6b")
+  abline(h = -2, col = "#d7301f", lwd = 2, lty = 2)
+  title(sub = "Nigeria NDHS 2024; red dashed line marks underweight cutoff")
+}
+
+draw_violin <- function(x, xpos, width = 0.35, col = "#cccccc") {
+  x <- x[!is.na(x)]
+  if (length(x) < 2) return(invisible(NULL))
+  d <- stats::density(x, na.rm = TRUE)
+  scaled <- d$y / max(d$y) * width
+  polygon(c(xpos - scaled, rev(xpos + scaled)), c(d$x, rev(d$x)),
+          col = col, border = "#636363")
+  points(xpos, median(x), pch = 19, cex = 0.8)
+}
+
+plot_mean_waz_religion <- function() {
+  stats_by_rel <- do.call(rbind, lapply(levels(df$religion), function(g) {
+    ms <- mean_se(df$waz[df$religion == g])
+    data.frame(religion = g, mean = ms["mean"], se = ms["se"])
+  }))
+  bp <- barplot(stats_by_rel$mean, names.arg = stats_by_rel$religion, col = "#bcbddc",
+                ylim = range(c(stats_by_rel$mean - stats_by_rel$se, stats_by_rel$mean + stats_by_rel$se, 0), na.rm = TRUE),
+                xlab = "Religion", ylab = "Mean WAZ",
+                main = "Figure 6. Mean WAZ by religion")
+  arrows(bp, stats_by_rel$mean - stats_by_rel$se, bp, stats_by_rel$mean + stats_by_rel$se,
+         angle = 90, code = 3, length = 0.05, col = "#252525")
+  title(sub = "Nigeria NDHS 2024; error bars show mean +/- standard error")
+}
+
+plot_corr_heatmap <- function() {
+  op <- par(mar = c(7, 7, 4, 2))
+  on.exit(par(op), add = TRUE)
+  m <- cor_matrix[nrow(cor_matrix):1, ]
+  image(seq_len(ncol(m)), seq_len(nrow(m)), t(m), axes = FALSE,
+        col = grDevices::colorRampPalette(c("#2166ac", "white", "#b2182b"))(101),
+        zlim = c(-1, 1), xlab = "", ylab = "", main = "Figure 7. Spearman correlation heatmap")
+  axis(1, seq_len(ncol(m)), colnames(m), las = 2)
+  axis(2, seq_len(nrow(m)), rev(rownames(cor_matrix)), las = 2)
+  for (i in seq_len(ncol(m))) {
+    for (j in seq_len(nrow(m))) text(i, j, format_num(m[j, i], 2), cex = 0.8)
+  }
+  title(sub = "Nigeria NDHS 2024; blue is negative and red is positive")
+}
+
+plot_outlier_box <- function() {
+  d <- data.frame(value = c(df$waz, df$whz), variable = rep(c("WAZ", "WHZ"), each = nrow(df)),
+                  flagged = c(waz_flags$iqr | waz_flags$z, whz_flags$iqr | whz_flags$z))
+  boxplot(value ~ variable, data = d, col = c("#9ecae1", "#a1d99b"),
+          xlab = "Outcome", ylab = "Z-score", main = "Figure 8. WAZ and WHZ outlier flags",
+          outline = FALSE)
+  for (i in 1:2) {
+    sub <- d[d$variable == c("WAZ", "WHZ")[i] & d$flagged & !is.na(d$value), ]
+    points(jitter(rep(i, nrow(sub)), amount = 0.07), sub$value, pch = 19, col = "#f16913", cex = 0.6)
+    points(i, mean(d$value[d$variable == c("WAZ", "WHZ")[i]], na.rm = TRUE),
+           pch = 18, col = "#54278f", cex = 1.6)
+  }
+  legend("topright", legend = c("IQR or |z| > 3 flagged", "Mean"), pch = c(19, 18),
+         col = c("#f16913", "#54278f"), bty = "n")
+  title(sub = "Nigeria NDHS 2024; orange points are flagged by at least one method")
+}
+
+figure_files <- c(
+  "figure_01_waz_histogram.png" = plot_waz_hist,
+  "figure_02_whz_histogram.png" = plot_whz_hist,
+  "figure_03_waz_by_region_boxplot.png" = plot_waz_region_box,
+  "figure_04_whz_by_wealth_violin.png" = plot_whz_wealth_violin,
+  "figure_05_waz_by_breastfeeding_violin.png" = plot_waz_breastfeeding_violin,
+  "figure_06_mean_waz_by_religion.png" = plot_mean_waz_religion,
+  "figure_07_spearman_heatmap.png" = plot_corr_heatmap,
+  "figure_08_outlier_boxplot.png" = plot_outlier_box
+)
+for (nm in names(figure_files)) ggsave(file.path(figures_dir, nm), figure_files[[nm]])
+
+table_text <- function(tbl, max_rows = 20) {
+  if (nrow(tbl) > max_rows) tbl <- tbl[seq_len(max_rows), , drop = FALSE]
+  capture.output(print(tbl, row.names = FALSE, right = FALSE))
+}
+
+add_text_page <- function(title, body_lines, cex = 0.72) {
+  plot.new()
+  text(0.02, 0.97, title, adj = c(0, 1), cex = 1.15, font = 2)
+  y <- 0.91
+  for (line in body_lines) {
+    if (line == "") {
+      y <- y - 0.025
+    } else {
+      text(0.02, y, line, adj = c(0, 1), cex = cex, family = "mono")
+      y <- y - 0.028
+    }
+    if (y < 0.04) {
+      plot.new()
+      y <- 0.97
+    }
+  }
+}
+
+interpret_missing <- paste0("Breastfeeding has the largest missing share because the assignment keeps only codes 93, 94, and 95. ",
+                            "WAZ and WHZ have ", missing_waz_pct, "% and ", missing_whz_pct,
+                            "% missing respectively after DHS invalid anthropometry codes are removed.")
+interpret_summary <- paste0("The average WAZ is ", format_num(summary_stats$Mean[1], 2),
+                            " and the average WHZ is ", format_num(summary_stats$Mean[2], 2),
+                            ", so weight-for-age is lower nationally than weight-for-height. ",
+                            "Both distributions include children below the clinical -2 threshold, making prevalence estimates necessary.")
+interpret_prev <- paste0("Nationally, ", format_num(prevalence_table$Percent[1], 1),
+                         "% of children are underweight and ", format_num(prevalence_table$Percent[3], 1),
+                         "% are wasted. Severe underweight is ", format_num(prevalence_table$Percent[2], 1),
+                         "%, while severe wasting is ", format_num(prevalence_table$Percent[4], 1),
+                         "%, showing the most extreme WHZ deficits are less common.")
+most_common <- comparison_table$Indicator[1]
+interpret_comp <- paste0(most_common, " is the most common of the three anthropometric deficits in this dataset. ",
+                         "This comparison places the new WAZ and WHZ assignment results beside the HAZ stunting measure from class.")
+top_group <- underweight_by_group[order(-underweight_by_group$Underweight_Percent), ][1, ]
+interpret_group <- paste0("The highest underweight prevalence appears in ", top_group$Category, " within ",
+                          top_group$Grouping, " at ", format_num(top_group$Underweight_Percent, 1),
+                          "%. This subgroup is the clearest priority for follow-up modelling and targeted public-health interpretation.")
+interpret_cor <- paste0("The strongest non-anthropometric link with WAZ is ", strongest_waz,
+                        "; for WHZ it is ", strongest_whz, ". The ranked-pairs table shows that these associations are modest, ",
+                        "so correlation should be treated as screening evidence rather than causal evidence.")
+interpret_outliers <- paste0("IQR flagged ", outlier_summary$IQR_Flagged[1], " WAZ observations and ",
+                             outlier_summary$IQR_Flagged[2], " WHZ observations. These records are kept because the DHS invalid-code rule ",
+                             "has already removed non-measurements, and remaining extremes may represent clinically important children.")
+
+assumptions_lines <- c(
+  "Unit of analysis: one row represents one child in the Nigeria DHS 2024 Children's Recode file.",
+  "Raw DHS anthropometry variables are preserved; cleaned HAZ, WAZ, and WHZ are created separately.",
+  "DHS anthropometry codes 9996 and above are treated as missing before dividing valid scores by 100.",
+  "Religion was checked against the DHS labels and collapsed to Christianity, Islam, and Other.",
+  "The official assignment lists 15 WAZ/WHZ variables; hw70 is read only to reproduce the required HAZ comparison table.",
+  "v005 is normalized and used for descriptive prevalence estimates, but no full complex-survey design adjustment is applied.",
+  "The draft guidance notes hw73 plausibility flags; hw73 is not applied because it is outside the official assignment variable list."
+)
+
+rq_table <- data.frame(
+  RQ = c("RQ1", "RQ2", "RQ3"),
+  Research_question = c(
+    "Among children in the North west and North east, is WAZ lower than in southern zones after adjusting for wealth, mother's education, residence, and household size?",
+    "Among children in the poorest wealth quintile, is WHZ lower than in the richer/richest quintiles after controlling for region and mother's education?",
+    "Among Muslim children, is WAZ lower than among Christian children after adjusting for region, wealth, mother's education, and rural residence?"
+  ),
+  Evidence = c("Table 5 and Figure 3", "Figure 4 and Table 5", "Table 5 and Figure 6"),
+  Suggested_method = c("Weighted linear regression or logistic model for underweight",
+                       "Multivariable linear regression for WHZ and logistic model for wasting",
+                       "Multivariable regression or adjusted logistic model for underweight"),
+  stringsAsFactors = FALSE
+)
+write.csv(rq_table, file.path(tables_dir, "table_10_future_research_questions.csv"), row.names = FALSE)
+
+conclusion <- paste0(
+  "The NDHS 2024 child-recode analysis shows that undernutrition in Nigeria is broader than one anthropometric measure. ",
+  "After removing DHS invalid anthropometry codes, ", format_num(valid_waz, 0), " children had valid WAZ and ",
+  format_num(valid_whz, 0), " had valid WHZ. The weighted national prevalence of underweight was ",
+  format_num(prevalence_table$Percent[1], 1), "%, compared with ", format_num(prevalence_table$Percent[3], 1),
+  "% for wasting. Severe underweight affected ", format_num(prevalence_table$Percent[2], 1),
+  "%, while severe wasting affected ", format_num(prevalence_table$Percent[4], 1),
+  "%. When compared with the HAZ result from class, stunting was ",
+  format_num(comparison_table$Percent[comparison_table$Outcome == "HAZ"], 1),
+  "% and remained the largest deficit, consistent with chronic deprivation being more widespread than acute wasting. ",
+  "The most at-risk subgroup in the descriptive tables was ", top_group$Category, " (", top_group$Grouping,
+  "), where underweight reached ", format_num(top_group$Underweight_Percent, 1),
+  "%. The regional and socioeconomic figures also show that risk is not evenly distributed across Nigerian children, so national averages hide important local vulnerability. ",
+  "Correlations with wealth, education, household size, and under-five crowding were modest, but they identify plausible predictors for the next sprint. ",
+  "The next analytical step should be a weighted multivariable model for underweight and wasting that adjusts for region, wealth, maternal education, household size, and child age."
+)
+writeLines(strwrap(conclusion, width = 100), file.path(outputs_dir, "conclusion.txt"))
+
+report_pdf <- file.path(assignment_dir, "Sprint01_BasilEmeokoro.pdf")
+grDevices::pdf(report_pdf, width = 8.27, height = 11.69, onefile = TRUE)
+add_text_page("Sprint 01 Assignment: Child Undernutrition in Nigeria",
+              c("Basil Emeokoro",
+                "ADA Global Academy MicroMasters in Data Science, AI & Research Methods",
+                "Dataset: Nigeria DHS 2024 Children's Recode - NGKR8BFL",
+                "",
+                paste("Total rows:", total_rows),
+                paste("Valid WAZ observations:", valid_waz),
+                paste("Valid WHZ observations:", valid_whz),
+                paste("Missing WAZ (%):", missing_waz_pct),
+                paste("Missing WHZ (%):", missing_whz_pct),
+                "",
+                "Breastfeeding recode follows the assignment PDF: 93 = Never, 94 = Still breastfeeding, 95 = Stopped."))
+add_text_page("Dataset Understanding, Assumptions, and Limitations",
+              c("Research-quality checks from the assignment draft", "", wrap_lines(paste(assumptions_lines, collapse = " "), 92)))
+add_text_page("Task B Tables and Interpretations",
+              c("Table 1. Missing value table", table_text(missing_table),
+                "", wrap_lines(interpret_missing),
+                "", "Table 2. Summary statistics for WAZ and WHZ", table_text(summary_stats),
+                "", wrap_lines(interpret_summary),
+                "", "Table 3. National prevalence", table_text(prevalence_table),
+                "", wrap_lines(interpret_prev)))
+add_text_page("Task B Continued",
+              c("Table 4. HAZ, WAZ, and WHZ comparison", table_text(comparison_table),
+                "", wrap_lines(interpret_comp),
+                "", "Table 5. Underweight prevalence by subgroup", table_text(underweight_by_group, 40),
+                "", wrap_lines(interpret_group)))
+plot_waz_hist()
+mtext("Caption: WAZ distribution with clinical underweight and severe underweight cutoffs.", side = 1, line = 4, cex = 0.8)
+plot_whz_hist()
+mtext("Caption: WHZ distribution with wasting and severe wasting cutoffs.", side = 1, line = 4, cex = 0.8)
+plot_waz_region_box()
+mtext("Caption: Regions are sorted by median WAZ from lowest to highest.", side = 1, line = 5, cex = 0.8)
+plot_whz_wealth_violin()
+mtext("Caption: WHZ density by household wealth quintile with the wasting cutoff.", side = 1, line = 5, cex = 0.8)
+plot_waz_breastfeeding_violin()
+mtext("Caption: WAZ density across the three assignment-defined breastfeeding groups.", side = 1, line = 5, cex = 0.8)
+plot_mean_waz_religion()
+mtext("Caption: Mean WAZ by collapsed religion group with standard-error bars.", side = 1, line = 4, cex = 0.8)
+plot_corr_heatmap()
+mtext("Caption: Spearman correlation matrix for anthropometry and household predictors.", side = 1, line = 5, cex = 0.8)
+add_text_page("Task D Correlation and Outliers",
+              c("Table 6. Ranked Spearman pairs", table_text(ranked_pairs, 20),
+                "", wrap_lines(interpret_cor),
+                "", "Table 7. Outlier summary", table_text(outlier_summary),
+                "", "Table 8. Outlier decision table", table_text(decision_table),
+                "", wrap_lines(interpret_outliers)))
+plot_outlier_box()
+mtext("Caption: Side-by-side WAZ and WHZ box plots with orange flagged points and purple means.", side = 1, line = 4, cex = 0.8)
+add_text_page("Task E Research Questions and Conclusion",
+              c("Table 9. Future research questions", table_text(rq_table, 10),
+                "", "Conclusion", wrap_lines(conclusion, 92)))
+grDevices::dev.off()
+
+readme <- c(
+  "# Sprint 01 Assignment - Basil Emeokoro",
+  "",
+  "Run `Sprint01_BasilEmeokoro.R` from this Assignment folder.",
+  "",
+  "The script looks for `NGKR8BFL (1).csv` or `NGKR8BFL.csv` in the Assignment folder first, then in the sibling `Tasks` folder.",
+  "It creates cleaned tables in `tables/`, figures in `figures/`, text outputs in `outputs/`, and the final PDF report at `Sprint01_BasilEmeokoro.pdf`.",
+  "",
+  "No contributed R packages are required; the script is written in base R so it can run on this workstation without installing packages."
+)
+writeLines(readme, file.path(assignment_dir, "README.md"))
+
+cat("Created report:", report_pdf, "\n")
+cat("Created figures in:", figures_dir, "\n")
+cat("Created tables in:", tables_dir, "\n")

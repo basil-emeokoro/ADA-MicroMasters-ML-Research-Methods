@@ -1,0 +1,3 @@
+"Variable","IQR_Flagged","Percent_Flagged","Main_Regions","Decision","Reason"
+"WAZ",180,1.89,"North east, North west","Keep","Anthropometric extremes are plausible child-health findings after DHS invalid codes were removed."
+"WHZ",184,1.94,"North west, North east","Keep","Anthropometric extremes are plausible child-health findings after DHS invalid codes were removed."

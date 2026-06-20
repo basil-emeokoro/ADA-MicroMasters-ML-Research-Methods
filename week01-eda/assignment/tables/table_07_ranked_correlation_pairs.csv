@@ -1,0 +1,16 @@
+"Variable_1","Variable_2","Spearman_rho","Abs_rho"
+"Wealth","Mothers_Education",0.686,0.686
+"WAZ","WHZ",0.596,0.596
+"Household_Size","Under5_Children",0.575,0.575
+"Mothers_Education","Household_Size",-0.286,0.286
+"WAZ","Mothers_Education",0.276,0.276
+"WAZ","Wealth",0.269,0.269
+"Mothers_Education","Under5_Children",-0.2,0.2
+"Wealth","Household_Size",-0.195,0.195
+"Wealth","Under5_Children",-0.157,0.157
+"WAZ","Household_Size",-0.113,0.113
+"WAZ","Under5_Children",-0.091,0.091
+"WHZ","Wealth",-0.012,0.012
+"WHZ","Household_Size",0.008,0.008
+"WHZ","Mothers_Education",-0.007,0.007
+"WHZ","Under5_Children",-0.006,0.006

@@ -1,0 +1,45 @@
+# R
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/settings.json
+
+# OS and logs
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+~$*
+
+# Local/source-class folders kept outside the public portfolio commit
+/Assignment/
+/Tasks/
+/Assignment-Draft.docx
+/Assignment-Draft.pdf
+/Assignment-Draft.txt
+
+# Restricted or large Week 1 data files
+week01-eda/resources/datasets/*.csv
+week01-eda/resources/datasets/*.dta
+week01-eda/resources/datasets/*.zip
+week01-eda/resources/datasets/*.sav
+!week01-eda/resources/datasets/README.md
+!week01-eda/resources/datasets/.gitkeep

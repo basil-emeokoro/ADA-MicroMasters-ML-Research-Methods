@@ -1,0 +1,4 @@
+"RQ","Research_question","Evidence","Suggested_method"
+"RQ1","Among children in the North west and North east, is WAZ lower than in southern zones after adjusting for wealth, mother's education, residence, and household size?","Table 5 and Figure 3","Weighted linear regression or logistic model for underweight"
+"RQ2","Among children in the poorest wealth quintile, is WHZ lower than in the richer/richest quintiles after controlling for region and mother's education?","Figure 4 and Table 5","Multivariable linear regression for WHZ and logistic model for wasting"
+"RQ3","Among Muslim children, is WAZ lower than among Christian children after adjusting for region, wealth, mother's education, and rural residence?","Table 5 and Figure 6","Multivariable regression or adjusted logistic model for underweight"

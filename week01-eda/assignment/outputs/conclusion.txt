@@ -1,0 +1,13 @@
+The NDHS 2024 child-recode analysis shows that undernutrition in Nigeria is broader than one
+anthropometric measure. After removing DHS invalid anthropometry codes, 9,513 children had valid
+WAZ and 9,464 had valid WHZ. The weighted national prevalence of underweight was 26.4%, compared
+with 8.4% for wasting. Severe underweight affected 8.3%, while severe wasting affected 1.9%. When
+compared with the HAZ result from class, stunting was 39.1% and remained the largest deficit,
+consistent with chronic deprivation being more widespread than acute wasting. The most at-risk
+subgroup in the descriptive tables was Poorest (Wealth quintile), where underweight reached 38.6%.
+The regional and socioeconomic figures also show that risk is not evenly distributed across
+Nigerian children, so national averages hide important local vulnerability. Correlations with
+wealth, education, household size, and under-five crowding were modest, but they identify plausible
+predictors for the next sprint. The next analytical step should be a weighted multivariable model
+for underweight and wasting that adjusts for region, wealth, maternal education, household size,
+and child age.

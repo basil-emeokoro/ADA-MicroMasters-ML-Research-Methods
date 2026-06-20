@@ -1,0 +1,21 @@
+"Grouping","Category","Valid_N","Underweight_Percent"
+"Region","North west",2418,33.29
+"Region","North east",1700,33.1
+"Region","North central",1690,21.35
+"Region","South east",1703,15.85
+"Region","South south",1112,17.13
+"Region","South west",890,21.32
+"Residence","Urban",4035,21.47
+"Residence","Rural",5478,29.99
+"Wealth quintile","Poorest",2078,38.6
+"Wealth quintile","Poorer",1734,32.05
+"Wealth quintile","Middle",1867,25.11
+"Wealth quintile","Richer",2085,21.96
+"Wealth quintile","Richest",1749,12.18
+"Mother's education","None",3524,36.11
+"Mother's education","Primary",1157,26.13
+"Mother's education","Secondary",3628,20.84
+"Mother's education","Higher",1204,9.79
+"Religion","Christianity",4340,16.38
+"Religion","Islam",5112,32.39
+"Religion","Other",61,30.01
