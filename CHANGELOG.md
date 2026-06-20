@@ -31,7 +31,13 @@
   - `LICENSE`
   - `CITATION.cff`
   - `PROJECT_NOTES.md`
-  - `AGENT_NOTES.md`
+
+## Repository documentation updates
+
+- Added `PROJECT_STATUS.md` as the executive dashboard for programme progress, repository health, CI, documentation, reproducibility, and milestones.
+- Added `CITATIONS.md` as the living catalogue of datasets, software, packages, standards, and external resources.
+- Added `docs/releases/v0.1_release_notes.md` for manual creation of the Week 1 GitHub Release when GitHub CLI is unavailable.
+- Updated the root README with a repository documentation index.
 
 ## Week 2
 

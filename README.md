@@ -35,6 +35,17 @@ The objective extends beyond completing weekly assignments. This monorepo docume
 - Practice transparent research documentation and version control.
 - Maintain a portfolio suitable for academic, research, and industry review.
 
+## Repository Documentation
+
+| Document | Purpose |
+| --- | --- |
+| [PROJECT_STATUS.md](PROJECT_STATUS.md) | Executive dashboard for weekly progress, repository health, CI, milestones, and release status. |
+| [CHANGELOG.md](CHANGELOG.md) | Chronological record of weekly work, major findings, and repository changes. |
+| [PROJECT_NOTES.md](PROJECT_NOTES.md) | Operating notes for future coding agents and continuation work. |
+| [CITATIONS.md](CITATIONS.md) | Catalogue of datasets, software, packages, standards, and external resources. |
+| [LICENSE](LICENSE) | MIT licence for the repository. |
+| [CITATION.cff](CITATION.cff) | Citation metadata used by GitHub's "Cite this repository" feature. |
+
 ## Topics Covered
 
 - Exploratory data analysis
@@ -56,19 +67,22 @@ The objective extends beyond completing weekly assignments. This monorepo docume
 .
 |-- README.md
 |-- CHANGELOG.md
+|-- CITATIONS.md
 |-- CITATION.cff
 |-- LICENSE
+|-- PROJECT_STATUS.md
 |-- PROJECT_NOTES.md
 |-- .github/
 |   `-- workflows/
 |       `-- r-check.yml
+|-- docs/
+|   `-- releases/
 |-- week01-eda/
 |   |-- assignment/
 |   |-- resources/
 |   `-- notes/
 |-- week02/ ... week12/
-|-- shared/
-`-- docs/
+`-- shared/
 ```
 
 Each weekly folder is intended to contain source code, reports, visualizations, documentation, selected resources, and reproducible workflows. Datasets are included only where redistribution is permitted.
