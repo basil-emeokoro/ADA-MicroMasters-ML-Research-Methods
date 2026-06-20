@@ -37,6 +37,7 @@ Thumbs.db
 /Assignment-Draft.txt
 
 # Restricted or large Week 1 data files
+week01-eda/assignment/NGKR8BFL*.csv
 week01-eda/resources/datasets/*.csv
 week01-eda/resources/datasets/*.dta
 week01-eda/resources/datasets/*.zip
