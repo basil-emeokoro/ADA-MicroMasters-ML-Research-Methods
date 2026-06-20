@@ -1,33 +1,39 @@
-# ADA MicroMasters ML, AI & Research Methods Portfolio
+# ADA MicroMasters ML Research Methods
 
-This repository is the permanent research portfolio for Basil Oforbuike Emeokoro's 12-week ADA Global Academy MicroMasters programme in Data Science, Artificial Intelligence, Machine Learning, and Research Methods.
+[![License: MIT](https://img.shields.io/github/license/basil-emeokoro/ADA-MicroMasters-ML-Research-Methods)](LICENSE)
+![Last Commit](https://img.shields.io/github/last-commit/basil-emeokoro/ADA-MicroMasters-ML-Research-Methods)
+![Repository Size](https://img.shields.io/github/repo-size/basil-emeokoro/ADA-MicroMasters-ML-Research-Methods)
+![Main Language](https://img.shields.io/github/languages/top/basil-emeokoro/ADA-MicroMasters-ML-Research-Methods)
+[![R Check](https://github.com/basil-emeokoro/ADA-MicroMasters-ML-Research-Methods/actions/workflows/r-check.yml/badge.svg)](https://github.com/basil-emeokoro/ADA-MicroMasters-ML-Research-Methods/actions/workflows/r-check.yml)
+
+This repository is Basil Oforbuike Emeokoro's permanent research portfolio for the 12-week ADA Global Academy MicroMasters programme in Data Science, Artificial Intelligence, Machine Learning, and Research Methods.
 
 The objective extends beyond completing weekly assignments. This monorepo documents reproducible analyses, statistical modelling, explainable AI, end-to-end data science workflows, scientific reporting, and clean software engineering practice.
 
+## Portfolio Index
+
+| Week | Topic | Status | Main Output | Code | Report |
+| --- | --- | --- | --- | --- | --- |
+| Week 1 | Exploratory data analysis of Nigeria DHS child undernutrition | Complete | WAZ/WHZ EDA tables, figures, and PDF report | [R script](week01-eda/assignment/Sprint01_BasilEmeokoro.R) | [PDF](week01-eda/assignment/Sprint01_BasilEmeokoro.pdf) |
+| Week 2 | To be added | Planned | TBD | TBD | TBD |
+| Week 3 | To be added | Planned | TBD | TBD | TBD |
+| Week 4 | To be added | Planned | TBD | TBD | TBD |
+| Week 5 | To be added | Planned | TBD | TBD | TBD |
+| Week 6 | To be added | Planned | TBD | TBD | TBD |
+| Week 7 | To be added | Planned | TBD | TBD | TBD |
+| Week 8 | To be added | Planned | TBD | TBD | TBD |
+| Week 9 | To be added | Planned | TBD | TBD | TBD |
+| Week 10 | To be added | Planned | TBD | TBD | TBD |
+| Week 11 | To be added | Planned | TBD | TBD | TBD |
+| Week 12 | To be added | Planned | TBD | TBD | TBD |
+
 ## Repository Objectives
 
-- Build research-quality data science projects across the 12-week programme.
+- Build research-quality data science projects across the full 12-week programme.
 - Apply statistical and machine learning techniques to real-world datasets.
-- Keep analysis code, reports, figures, tables, and notes reproducible.
+- Preserve reproducible scripts, reports, figures, tables, and notes.
 - Practice transparent research documentation and version control.
-- Develop a portfolio suitable for academic, research, and industry opportunities.
-
-## Weekly Roadmap
-
-| Week | Focus | Status |
-| --- | --- | --- |
-| Week 1 | Exploratory data analysis of child undernutrition using Nigeria DHS 2024 | Complete |
-| Week 2 | To be added | Planned |
-| Week 3 | To be added | Planned |
-| Week 4 | To be added | Planned |
-| Week 5 | To be added | Planned |
-| Week 6 | To be added | Planned |
-| Week 7 | To be added | Planned |
-| Week 8 | To be added | Planned |
-| Week 9 | To be added | Planned |
-| Week 10 | To be added | Planned |
-| Week 11 | To be added | Planned |
-| Week 12 | To be added | Planned |
+- Maintain a portfolio suitable for academic, research, and industry review.
 
 ## Topics Covered
 
@@ -48,30 +54,39 @@ The objective extends beyond completing weekly assignments. This monorepo docume
 
 ```text
 .
-├── README.md
-├── CHANGELOG.md
-├── .gitignore
-├── week01-eda/
-│   ├── assignment/
-│   ├── resources/
-│   └── notes/
-├── week02/ ... week12/
-├── shared/
-└── docs/
+|-- README.md
+|-- CHANGELOG.md
+|-- CITATION.cff
+|-- LICENSE
+|-- PROJECT_NOTES.md
+|-- AGENT_NOTES.md
+|-- .github/
+|   `-- workflows/
+|       `-- r-check.yml
+|-- week01-eda/
+|   |-- assignment/
+|   |-- resources/
+|   `-- notes/
+|-- week02/ ... week12/
+|-- shared/
+`-- docs/
 ```
 
 Each weekly folder is intended to contain source code, reports, visualizations, documentation, selected resources, and reproducible workflows. Datasets are included only where redistribution is permitted.
 
 ## Technologies Used
 
-- R, RStudio, base R, tidyverse-style workflows where packages are available.
+- R and RStudio for statistical analysis, data cleaning, visualization, and report generation.
 - Python, Jupyter, pandas, NumPy, Matplotlib, Seaborn, and scikit-learn for future weeks.
+- GitHub Actions for lightweight reproducibility checks.
 - Git and GitHub for version control and portfolio publication.
-- PDF, CSV, and image outputs for reproducible reporting.
+- PDF, CSV, and image outputs for research reporting.
 
 ## Reproducibility Statement
 
 Each week should include the code, report, figures, tables, and notes needed to understand and rerun the work. Large or restricted datasets are not committed unless redistribution is permitted. When a dataset cannot be published, the relevant README explains where it should be placed locally and how the scripts locate it.
+
+For Week 1, the DHS raw CSV is not committed. To reproduce the full analysis locally, place `NGKR8BFL.csv` or `NGKR8BFL (1).csv` in `week01-eda/resources/datasets/` and run the assignment script from `week01-eda/assignment/`.
 
 ## Software Engineering Practices
 
@@ -81,6 +96,7 @@ Each week should include the code, report, figures, tables, and notes needed to 
 - Use clear folder boundaries for weekly work.
 - Record major changes in `CHANGELOG.md`.
 - Prefer modular, readable code and explicit assumptions.
+- Use feature branches for substantial weekly work before merging to `main`.
 
 ## Guiding Principles
 
@@ -101,7 +117,7 @@ Work for each week should be committed as a focused change set using descriptive
 feat(week01): complete exploratory analysis of Nigeria DHS child undernutrition dataset
 ```
 
-Future weeks should be added under `week02` through `week12` without restructuring prior completed weeks.
+Future weeks should be added under `week02` through `week12` without restructuring prior completed weeks. Release tags should mark completed milestones, beginning with `v0.1` for Week 1.
 
 ## Author
 
@@ -109,6 +125,10 @@ Basil Oforbuike Emeokoro
 Psychometrician | Data Scientist | AI & Machine Learning Researcher | Software Developer  
 Email: basil.emeokoro@gmail.com
 
+## Citation
+
+Citation metadata is available in [CITATION.cff](CITATION.cff). GitHub can use this file to display "Cite this repository".
+
 ## License
 
-No license has been selected yet. All rights are reserved until a license is added.
+This repository is licensed under the [MIT License](LICENSE).

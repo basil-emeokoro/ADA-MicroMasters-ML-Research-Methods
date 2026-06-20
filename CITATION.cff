@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it using the metadata below."
+title: "ADA MicroMasters ML Research Methods"
+authors:
+  - family-names: "Emeokoro"
+    given-names: "Basil Oforbuike"
+url: "https://github.com/basil-emeokoro/ADA-MicroMasters-ML-Research-Methods"
+repository-code: "https://github.com/basil-emeokoro/ADA-MicroMasters-ML-Research-Methods"
+date-released: "2026-06-20"
+license: "MIT"
+type: software

@@ -4,6 +4,11 @@
 
 - Dataset: Nigeria DHS 2024 Children's Recode dataset (`NGKR8BFL`), used locally for child anthropometry analysis.
 - Objective: exploratory analysis of child undernutrition in Nigeria using WAZ and WHZ, with HAZ included for stunting comparison.
+- Portfolio hardening:
+  - Added MIT license metadata.
+  - Added `CITATION.cff` for GitHub citation support.
+  - Added GitHub Actions workflow to run the Week 1 R script against a synthetic reproducibility fixture.
+  - Added portfolio index, README badges, agent notes, and project notes for future weekly work.
 - Analyses completed:
   - Cleaned WAZ and WHZ by converting DHS invalid codes `9996+` to missing and scaling valid scores by 100.
   - Recoded region, residence, wealth, mother education, father education, breastfeeding, and religion.
@@ -22,6 +27,11 @@
   - `week01-eda/assignment/tables/`
   - `week01-eda/assignment/outputs/`
   - `week01-eda/assignment/README.md`
+  - `.github/workflows/r-check.yml`
+  - `LICENSE`
+  - `CITATION.cff`
+  - `PROJECT_NOTES.md`
+  - `AGENT_NOTES.md`
 
 ## Week 2
 

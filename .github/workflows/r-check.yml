@@ -1,0 +1,80 @@
+name: R Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  week01-r-script:
+    name: Week 1 R script
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "release"
+
+      - name: Create synthetic Week 1 fixture
+        run: |
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+
+          out = Path("week01-eda/resources/datasets/NGKR8BFL.csv")
+          out.parent.mkdir(parents=True, exist_ok=True)
+
+          fields = [
+              "hw70", "hw71", "hw72", "hw1", "b4", "b5", "m4", "v024",
+              "v025", "v106", "v701", "v130", "v190", "v136", "v137", "v005"
+          ]
+
+          rows = []
+          for i in range(180):
+              region = (i % 6) + 1
+              wealth = (i % 5) + 1
+              mother_educ = i % 4
+              father_educ = i % 4
+              religion = [1, 2, 3, 4, 96][i % 5]
+              m4 = [93, 94, 95][i % 3]
+              waz = int((-240 + (i % 80) * 4))
+              whz = int((-160 + (i % 70) * 3))
+              haz = int((-290 + (i % 90) * 4))
+              if i in (10, 40):
+                  waz = 9996
+              if i in (20, 50):
+                  whz = 9997
+              rows.append({
+                  "hw70": haz,
+                  "hw71": waz,
+                  "hw72": whz,
+                  "hw1": i % 60,
+                  "b4": (i % 2) + 1,
+                  "b5": 1,
+                  "m4": m4,
+                  "v024": region,
+                  "v025": (i % 2) + 1,
+                  "v106": mother_educ,
+                  "v701": 8 if i % 37 == 0 else father_educ,
+                  "v130": religion,
+                  "v190": wealth,
+                  "v136": 3 + (i % 9),
+                  "v137": 1 + (i % 4),
+                  "v005": 1000000 + (i % 5) * 10000,
+              })
+
+          with out.open("w", newline="", encoding="utf-8") as f:
+              writer = csv.DictWriter(f, fieldnames=fields)
+              writer.writeheader()
+              writer.writerows(rows)
+          PY
+
+      - name: Run Week 1 assignment script
+        working-directory: week01-eda/assignment
+        run: Rscript Sprint01_BasilEmeokoro.R
