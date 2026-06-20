@@ -1,34 +1,77 @@
-# Sprint 01 Assignment - Basil Emeokoro
+# Sprint 01 Assignment – Exploratory Data Analysis (EDA)
 
-This is the authoritative Week 1 assignment folder for the GitHub monorepo. Use this folder for professor submission.
+This folder contains a complete, self-contained Week 1 assignment developed for the ADA Global Academy MicroMasters in Machine Learning and Research Methods.
 
-The root-level `Assignment/` folder is a legacy local folder from earlier work. The local `Tasks/` folder is a reference/data folder and is not required when submitting this assignment folder.
+The assignment performs exploratory data analysis on child nutrition indicators using Nigeria DHS Child Recode data. It generates cleaned statistical tables, publication-quality figures, reproducibility metadata, and a final PDF report.
 
-## Independent Submission Use
+The folder is designed to run independently on any compatible computer without requiring the rest of the project repository.
 
-To send or run this folder by itself, place one approved DHS child recode CSV directly inside this folder before running:
+## Dataset Requirements
+
+Before running the analysis, place one of the supported DHS Child Recode CSV files into this folder:
 
 ```text
 NGKR8BFL.csv
+```
+
+or
+
+```text
 NGKR8BFL (1).csv
 ```
 
-Do not include the `NGKR8BDT/` Stata folder unless the professor explicitly requests Stata files. The current R script reads CSV only.
+The analysis script automatically detects either filename.
 
-## Run
+Note: The original DHS/Stata distribution files (`.dta`, `.do`, `.dct`, `.frq`, etc.) are not required for this assignment. Only the CSV dataset is used.
 
-From this folder:
+## Running the Assignment
+
+### Using RStudio
+
+Open `Sprint01_BasilEmeokoro.R` and click Source.
+
+To preview all figures interactively after execution, run:
 
 ```r
-source("Sprint01_BasilEmeokoro.R")
+preview_all_figures()
 ```
 
-or from a terminal:
+### Using the Command Line
 
 ```powershell
 Rscript Sprint01_BasilEmeokoro.R
 ```
 
-The script creates cleaned tables in `tables/`, figures in `figures/`, text outputs in `outputs/`, session information in `outputs/sessionInfo.txt`, and the final PDF report at `Sprint01_BasilEmeokoro.pdf`.
+## Generated Outputs
 
-No contributed R packages are required; the script is written in base R.
+Running the script produces:
+
+- Publication-quality figures in `figures/`
+- Statistical tables in `tables/`
+- Supporting text outputs in `outputs/`
+- R session information in `outputs/sessionInfo.txt`
+- Final report: `Sprint01_BasilEmeokoro.pdf`
+
+## Reproducibility Statement
+
+The analysis is deterministic. Given the same input dataset and R environment, repeated executions produce identical analytical results and report outputs.
+
+The raw DHS dataset is not included in this repository because DHS microdata are subject to access and redistribution restrictions.
+
+## Software Requirements
+
+- R, version 4.5 or later recommended
+- Base R only; no contributed packages are required
+
+## Author
+
+Basil Oforbuike Emeokoro  
+ADA Global Academy - MicroMasters in Machine Learning and Research Methods
+
+## Complete Research Portfolio
+
+This assignment forms part of a larger 12-week research portfolio developed during the ADA Global Academy MicroMasters in Machine Learning and Research Methods.
+
+The complete repository, including subsequent weekly assignments, reproducibility resources, documentation, and project history, is available at:
+
+https://github.com/basil-emeokoro/ADA-MicroMasters-ML-Research-Methods
