@@ -22,19 +22,32 @@ cd ADA-MicroMasters-ML-Research-Methods
 
 ## Dataset Placement
 
-The Week 1 raw DHS dataset is restricted and is not committed to the repository. After obtaining approved access from The DHS Program, place the child recode CSV in one of these locations:
+The Week 1 raw DHS dataset is restricted and is not committed to the repository. After obtaining approved access from The DHS Program, use one of these recognized filenames:
+
+```text
+NGKR8BFL.csv
+NGKR8BFL (1).csv
+```
+
+The script searches for the dataset in this order:
+
+```text
+1. week01-eda/resources/datasets/
+2. week01-eda/assignment/
+3. repository root data/
+4. repository root datasets/
+5. legacy local Tasks/
+6. current working directory
+7. interactive RStudio file selection, if the file is still not found
+```
+
+The recommended portable location after cloning is:
 
 ```text
 week01-eda/resources/datasets/NGKR8BFL.csv
-week01-eda/resources/datasets/NGKR8BFL (1).csv
 ```
 
-For the local course workspace only, the script can also read the legacy task folder:
-
-```text
-Tasks/NGKR8BFL.csv
-Tasks/NGKR8BFL (1).csv
-```
+Do not commit the raw DHS CSV. The repository `.gitignore` excludes CSV files in `week01-eda/resources/datasets/`.
 
 ## Repository Layout
 

@@ -85,8 +85,8 @@ if (!dir.exists(assignment_dir)) {
 }
 
 root_dir <- normalize_dir(file.path(assignment_dir, ".."))
-tasks_dir <- file.path(root_dir, "Tasks")
 legacy_tasks_dir <- file.path(repo_dir, "Tasks")
+week_tasks_dir <- file.path(root_dir, "Tasks")
 datasets_dir <- file.path(root_dir, "resources", "datasets")
 ci_mode <- identical(tolower(Sys.getenv("CI")), "true") || identical(tolower(Sys.getenv("GITHUB_ACTIONS")), "true")
 
@@ -99,25 +99,47 @@ dir.create(tables_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(outputs_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(report_dir, showWarnings = FALSE, recursive = TRUE)
 
-dataset_candidates <- c(
-  file.path(assignment_dir, "NGKR8BFL (1).csv"),
-  file.path(assignment_dir, "NGKR8BFL.csv"),
-  file.path(datasets_dir, "NGKR8BFL (1).csv"),
-  file.path(datasets_dir, "NGKR8BFL.csv"),
-  file.path(tasks_dir, "NGKR8BFL (1).csv"),
-  file.path(tasks_dir, "NGKR8BFL.csv"),
-  file.path(legacy_tasks_dir, "NGKR8BFL (1).csv"),
-  file.path(legacy_tasks_dir, "NGKR8BFL.csv")
+dataset_filenames <- c("NGKR8BFL.csv", "NGKR8BFL (1).csv")
+dataset_locations <- list(
+  "week01-eda/resources/datasets" = datasets_dir,
+  "week01-eda/assignment" = assignment_dir,
+  "repository root data" = file.path(repo_dir, "data"),
+  "repository root datasets" = file.path(repo_dir, "datasets"),
+  "legacy local Tasks" = legacy_tasks_dir,
+  "legacy week01 Tasks" = week_tasks_dir,
+  "current working directory" = getwd()
 )
+
+dataset_candidates <- unlist(lapply(dataset_locations, function(folder) {
+  file.path(folder, dataset_filenames)
+}), use.names = FALSE)
 csv_file <- dataset_candidates[file.exists(dataset_candidates)][1]
+
+if (is.na(csv_file) && (interactive() || rstudio_session)) {
+  message("DHS CSV dataset not found in standard locations. Choose NGKR8BFL.csv or NGKR8BFL (1).csv.")
+  selected_file <- tryCatch(file.choose(), error = function(e) NA_character_)
+  if (!is.na(selected_file) && basename(selected_file) %in% dataset_filenames) {
+    csv_file <- normalize_dir(selected_file)
+  } else if (!is.na(selected_file)) {
+    stop("Selected file is not a recognized DHS child recode filename. Expected NGKR8BFL.csv or NGKR8BFL (1).csv.")
+  }
+}
+
 if (is.na(csv_file)) {
   stop(
     "Could not find the DHS CSV dataset.\n",
     "Expected one of: NGKR8BFL.csv or NGKR8BFL (1).csv\n",
-    "Checked assignment directory, week01-eda/resources/datasets, and local legacy Tasks folders.\n",
+    "Place the approved DHS child recode CSV in one of these supported locations:\n",
+    "  1. week01-eda/resources/datasets/\n",
+    "  2. week01-eda/assignment/\n",
+    "  3. repository root data/ or datasets/\n",
+    "  4. legacy local Tasks/\n",
+    "  5. current working directory\n",
+    "Interactive RStudio sessions may also choose the file manually when prompted.\n",
     "For GitHub Actions, the workflow creates a synthetic fixture in week01-eda/resources/datasets before running this script."
   )
 }
+csv_file <- normalize_dir(csv_file)
 if (ci_mode && grepl("resources/datasets/NGKR8BFL", csv_file, fixed = TRUE)) {
   message("CI mode detected: using synthetic fixture at ", csv_file)
 }
