@@ -629,6 +629,113 @@ add_text_page <- function(title, body_lines, cex = 0.72) {
   }
 }
 
+wrap_by_plot_width <- function(text, max_width = 0.86, cex = 0.72, family = "sans") {
+  words <- unlist(strsplit(text, "\\s+"))
+  words <- words[nzchar(words)]
+  if (length(words) == 0) return(character(0))
+
+  lines <- character(0)
+  current <- words[1]
+  if (length(words) > 1) {
+    for (word in words[-1]) {
+      candidate <- paste(current, word)
+      if (strwidth(candidate, cex = cex, family = family) <= max_width) {
+        current <- candidate
+      } else {
+        lines <- c(lines, current)
+        current <- word
+      }
+    }
+  }
+  c(lines, current)
+}
+
+draw_justified_line <- function(line, x, y, max_width, cex = 0.72, family = "sans") {
+  words <- unlist(strsplit(line, "\\s+"))
+  words <- words[nzchar(words)]
+  if (length(words) <= 1) {
+    text(x, y, line, adj = c(0, 1), cex = cex, family = family)
+    return(invisible(NULL))
+  }
+
+  line_width <- strwidth(line, cex = cex, family = family)
+  space_width <- strwidth(" ", cex = cex, family = family)
+  extra_spaces <- max(floor((max_width - line_width) / space_width), 0)
+  gap_count <- length(words) - 1
+  spaces <- rep(1L, gap_count)
+
+  if (extra_spaces > 0) {
+    for (i in seq_len(extra_spaces)) {
+      spaces[((i - 1) %% gap_count) + 1] <- spaces[((i - 1) %% gap_count) + 1] + 1L
+    }
+  }
+
+  justified <- words[1]
+  for (i in seq_len(gap_count)) {
+    justified <- paste0(justified, strrep(" ", spaces[i]), words[i + 1])
+  }
+  text(x, y, justified, adj = c(0, 1), cex = cex, family = family)
+  invisible(NULL)
+}
+
+draw_paragraph <- function(text, x = 0.08, y = 0.80, max_width = 0.84, cex = 0.72,
+                           line_height = 0.034, family = "sans", justify = TRUE) {
+  lines <- wrap_by_plot_width(text, max_width = max_width, cex = cex, family = family)
+  if (length(lines) == 0) return(y)
+
+  for (i in seq_along(lines)) {
+    is_last <- i == length(lines)
+    if (justify && !is_last) {
+      draw_justified_line(lines[i], x, y, max_width, cex = cex, family = family)
+    } else {
+      text(x, y, lines[i], adj = c(0, 1), cex = cex, family = family)
+    }
+    y <- y - line_height
+  }
+  y
+}
+
+add_task_e_page <- function(rq_table, conclusion) {
+  plot.new()
+  text(0.02, 0.97, "Task E Research Questions and Conclusion", adj = c(0, 1), cex = 1.15, font = 2)
+  add_page_number()
+
+  y <- 0.90
+  text(0.02, y, "Table 9. Future research questions", adj = c(0, 1), cex = 0.82, font = 2)
+  y <- y - 0.045
+
+  text(0.02, y, "RQ", adj = c(0, 1), cex = 0.68, font = 2)
+  text(0.08, y, "Research question", adj = c(0, 1), cex = 0.68, font = 2)
+  text(0.60, y, "Evidence", adj = c(0, 1), cex = 0.68, font = 2)
+  text(0.74, y, "Suggested method", adj = c(0, 1), cex = 0.68, font = 2)
+  y <- y - 0.028
+  segments(0.02, y + 0.01, 0.97, y + 0.01, col = "#999999")
+
+  for (i in seq_len(nrow(rq_table))) {
+    row_start <- y
+    text(0.02, row_start, rq_table$RQ[i], adj = c(0, 1), cex = 0.61, family = "sans")
+    q_lines <- wrap_by_plot_width(rq_table$Research_question[i], max_width = 0.49, cex = 0.61, family = "sans")
+    e_lines <- wrap_by_plot_width(rq_table$Evidence[i], max_width = 0.11, cex = 0.61, family = "sans")
+    m_lines <- wrap_by_plot_width(rq_table$Suggested_method[i], max_width = 0.23, cex = 0.61, family = "sans")
+    max_lines <- max(length(q_lines), length(e_lines), length(m_lines))
+
+    for (j in seq_len(max_lines)) {
+      if (j <= length(q_lines)) text(0.08, y, q_lines[j], adj = c(0, 1), cex = 0.61, family = "sans")
+      if (j <= length(e_lines)) text(0.60, y, e_lines[j], adj = c(0, 1), cex = 0.61, family = "sans")
+      if (j <= length(m_lines)) text(0.74, y, m_lines[j], adj = c(0, 1), cex = 0.61, family = "sans")
+      y <- y - 0.024
+    }
+    y <- y - 0.012
+  }
+
+  y <- y - 0.014
+  text(0.02, y, "Conclusion", adj = c(0, 1), cex = 0.86, font = 2)
+  y <- y - 0.045
+  y <- draw_paragraph(conclusion, x = 0.08, y = y, max_width = 0.84, cex = 0.66,
+                      line_height = 0.031, family = "mono", justify = TRUE)
+  invisible(y)
+}
+
 interpret_missing <- paste0("Breastfeeding has the largest missing share because the assignment keeps only codes 93, 94, and 95. ",
                             "WAZ and WHZ have ", missing_waz_pct, "% and ", missing_whz_pct,
                             "% missing respectively after DHS invalid anthropometry codes are removed.")
@@ -748,9 +855,7 @@ add_text_page("Task D Correlation and Outliers",
                 "", wrap_lines(interpret_outliers)))
 plot_outlier_box()
 add_page_number()
-add_text_page("Task E Research Questions and Conclusion",
-              c("Table 9. Future research questions", table_text(rq_table, 10),
-                "", "Conclusion", wrap_lines(conclusion, 92)))
+add_task_e_page(rq_table, conclusion)
 grDevices::dev.off()
 
 cat("Created report:", report_pdf, "\n")
