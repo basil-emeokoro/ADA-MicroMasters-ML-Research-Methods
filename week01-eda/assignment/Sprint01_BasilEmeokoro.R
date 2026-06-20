@@ -351,27 +351,70 @@ write.csv(ranked_pairs, file.path(tables_dir, "table_07_ranked_correlation_pairs
 write.csv(outlier_summary, file.path(tables_dir, "table_08_outlier_summary.csv"), row.names = FALSE)
 write.csv(decision_table, file.path(tables_dir, "table_09_outlier_decision.csv"), row.names = FALSE)
 
-ggsave <- function(filename, plot_fun, width = 10, height = 7, dpi = 300) {
+publication_style <- list(
+  text_col = "#1f1f1f",
+  axis_col = "#333333",
+  cutoff_col = "#d7301f",
+  severe_col = "#7f0000",
+  outlier_col = "#f16913",
+  mean_col = "#54278f",
+  grid_neg = "#2166ac",
+  grid_pos = "#b2182b",
+  caption_cex = 0.82,
+  subtitle_cex = 0.9,
+  title_cex = 1.15,
+  dpi = 300
+)
+
+publication_margins <- function(plot_type = "default") {
+  switch(plot_type,
+         histogram = c(6.5, 5.5, 5, 2),
+         horizontal_box = c(6.5, 9, 5, 2),
+         violin = c(7, 5.5, 5, 2),
+         bar = c(6.5, 5.5, 5, 2),
+         heatmap = c(12, 9, 5.5, 3),
+         outlier = c(7, 5.5, 5, 2),
+         c(6.5, 5.5, 5, 2))
+}
+
+theme_publication <- function(plot_type = "default") {
+  par(
+    bg = "white",
+    fg = publication_style$axis_col,
+    col.axis = publication_style$axis_col,
+    col.lab = publication_style$text_col,
+    col.main = publication_style$text_col,
+    family = "sans",
+    mar = publication_margins(plot_type),
+    mgp = c(3.1, 0.8, 0),
+    tcl = -0.3,
+    cex.axis = 0.95,
+    cex.lab = 1.02
+  )
+}
+
+ggsave <- function(filename, plot_fun, width = 10, height = 7, dpi = publication_style$dpi) {
   grDevices::png(filename, width = width, height = height, units = "in", res = dpi)
   on.exit(grDevices::dev.off(), add = TRUE)
   plot_fun()
 }
 
 plot_header_caption <- function(main, subtitle, caption, caption_line = 4.2) {
-  title(main = main, line = 2.2, cex.main = 1.15)
-  mtext(subtitle, side = 3, line = 0.65, cex = 0.9)
-  mtext(caption, side = 1, line = caption_line, cex = 0.82)
+  title(main = main, line = 2.2, cex.main = publication_style$title_cex)
+  mtext(subtitle, side = 3, line = 0.65, cex = publication_style$subtitle_cex)
+  mtext(caption, side = 1, line = caption_line, cex = publication_style$caption_cex)
 }
 
 plot_waz_hist <- function() {
-  op <- par(mar = c(6.5, 5.5, 5, 2))
+  op <- par(no.readonly = TRUE)
+  theme_publication("histogram")
   on.exit(par(op), add = TRUE)
   hist(df$waz, breaks = 40, col = "#9ecae1", border = "white",
        xlab = "Weight-for-age z-score (WAZ)", ylab = "Number of children",
        main = "")
-  abline(v = c(-2, -3), col = c("#d7301f", "#7f0000"), lwd = 2, lty = c(2, 3))
+  abline(v = c(-2, -3), col = c(publication_style$cutoff_col, publication_style$severe_col), lwd = 2, lty = c(2, 3))
   legend("topright", legend = c("-2 underweight cutoff", "-3 severe cutoff"), lty = c(2, 3),
-         col = c("#d7301f", "#7f0000"), bty = "n")
+         col = c(publication_style$cutoff_col, publication_style$severe_col), bty = "n")
   plot_header_caption(
     "Figure 1. Distribution of WAZ",
     paste0("Nigeria NDHS 2024; underweight prevalence = ", format_num(prevalence_table$Percent[1], 1), "%"),
@@ -380,14 +423,15 @@ plot_waz_hist <- function() {
 }
 
 plot_whz_hist <- function() {
-  op <- par(mar = c(6.5, 5.5, 5, 2))
+  op <- par(no.readonly = TRUE)
+  theme_publication("histogram")
   on.exit(par(op), add = TRUE)
   hist(df$whz, breaks = 40, col = "#a1d99b", border = "white",
        xlab = "Weight-for-height z-score (WHZ)", ylab = "Number of children",
        main = "")
-  abline(v = c(-2, -3), col = c("#d7301f", "#7f0000"), lwd = 2, lty = c(2, 3))
+  abline(v = c(-2, -3), col = c(publication_style$cutoff_col, publication_style$severe_col), lwd = 2, lty = c(2, 3))
   legend("topright", legend = c("-2 wasting cutoff", "-3 severe cutoff"), lty = c(2, 3),
-         col = c("#d7301f", "#7f0000"), bty = "n")
+         col = c(publication_style$cutoff_col, publication_style$severe_col), bty = "n")
   plot_header_caption(
     "Figure 2. Distribution of WHZ",
     paste0("Nigeria NDHS 2024; wasting prevalence = ", format_num(prevalence_table$Percent[3], 1), "%"),
@@ -396,7 +440,8 @@ plot_whz_hist <- function() {
 }
 
 plot_waz_region_box <- function() {
-  op <- par(mar = c(6.5, 9, 5, 2))
+  op <- par(no.readonly = TRUE)
+  theme_publication("horizontal_box")
   on.exit(par(op), add = TRUE)
   med <- tapply(df$waz, df$region, median, na.rm = TRUE)
   ordered_region <- names(sort(med))
@@ -406,7 +451,7 @@ plot_waz_region_box <- function() {
           xlab = "Weight-for-age z-score (WAZ)",
           ylab = "",
           main = "")
-  abline(v = -2, col = "#d7301f", lwd = 2, lty = 2)
+  abline(v = -2, col = publication_style$cutoff_col, lwd = 2, lty = 2)
   plot_header_caption(
     "Figure 3. WAZ by region",
     "Nigeria NDHS 2024; red dashed line marks underweight cutoff",
@@ -415,7 +460,8 @@ plot_waz_region_box <- function() {
 }
 
 plot_whz_wealth_violin <- function() {
-  op <- par(mar = c(7.5, 5.5, 5, 2))
+  op <- par(no.readonly = TRUE)
+  theme_publication("violin")
   on.exit(par(op), add = TRUE)
   vals <- split(df$whz, df$wealth)
   plot(NA, xlim = c(0.5, length(vals) + 0.5), ylim = range(df$whz, na.rm = TRUE),
@@ -423,7 +469,7 @@ plot_whz_wealth_violin <- function() {
        main = "")
   axis(1, seq_along(vals), names(vals), las = 1)
   for (i in seq_along(vals)) draw_violin(vals[[i]], i, col = "#c7e9c0")
-  abline(h = -2, col = "#d7301f", lwd = 2, lty = 2)
+  abline(h = -2, col = publication_style$cutoff_col, lwd = 2, lty = 2)
   plot_header_caption(
     "Figure 4. WHZ by wealth quintile",
     "Nigeria NDHS 2024; red dashed line marks wasting cutoff",
@@ -432,7 +478,8 @@ plot_whz_wealth_violin <- function() {
 }
 
 plot_waz_breastfeeding_violin <- function() {
-  op <- par(mar = c(7, 5.5, 5, 2))
+  op <- par(no.readonly = TRUE)
+  theme_publication("violin")
   on.exit(par(op), add = TRUE)
   df$breastfeeding_short <- factor(
     as.character(df$breastfeeding),
@@ -445,7 +492,7 @@ plot_waz_breastfeeding_violin <- function() {
        main = "")
   axis(1, seq_along(vals), names(vals), las = 1)
   for (i in seq_along(vals)) draw_violin(vals[[i]], i, col = "#fdae6b")
-  abline(h = -2, col = "#d7301f", lwd = 2, lty = 2)
+  abline(h = -2, col = publication_style$cutoff_col, lwd = 2, lty = 2)
   plot_header_caption(
     "Figure 5. WAZ by breastfeeding status",
     "Nigeria NDHS 2024; red dashed line marks underweight cutoff",
@@ -465,7 +512,8 @@ draw_violin <- function(x, xpos, width = 0.35, col = "#cccccc") {
 }
 
 plot_mean_waz_religion <- function() {
-  op <- par(mar = c(6.5, 5.5, 5, 2))
+  op <- par(no.readonly = TRUE)
+  theme_publication("bar")
   on.exit(par(op), add = TRUE)
   stats_by_rel <- do.call(rbind, lapply(levels(df$religion), function(g) {
     ms <- mean_se(df$waz[df$religion == g])
@@ -485,13 +533,14 @@ plot_mean_waz_religion <- function() {
 }
 
 plot_corr_heatmap <- function() {
-  op <- par(mar = c(12, 9, 5.5, 3))
+  op <- par(no.readonly = TRUE)
+  theme_publication("heatmap")
   on.exit(par(op), add = TRUE)
   m <- cor_matrix[nrow(cor_matrix):1, ]
   axis_labels <- c("WAZ", "WHZ", "Wealth", "Mother educ.", "Household size", "Under-5 kids")
   names(axis_labels) <- colnames(cor_matrix)
   image(seq_len(ncol(m)), seq_len(nrow(m)), t(m), axes = FALSE,
-        col = grDevices::colorRampPalette(c("#2166ac", "white", "#b2182b"))(101),
+        col = grDevices::colorRampPalette(c(publication_style$grid_neg, "white", publication_style$grid_pos))(101),
         zlim = c(-1, 1), xlab = "", ylab = "", main = "")
   axis(1, seq_len(ncol(m)), axis_labels[colnames(m)], las = 2, cex.axis = 0.78)
   axis(2, seq_len(nrow(m)), rev(axis_labels[rownames(cor_matrix)]), las = 1, cex.axis = 0.78)
@@ -507,7 +556,8 @@ plot_corr_heatmap <- function() {
 }
 
 plot_outlier_box <- function() {
-  op <- par(mar = c(7, 5.5, 5, 2))
+  op <- par(no.readonly = TRUE)
+  theme_publication("outlier")
   on.exit(par(op), add = TRUE)
   d <- data.frame(value = c(df$waz, df$whz), variable = rep(c("WAZ", "WHZ"), each = nrow(df)),
                   flagged = c(waz_flags$iqr | waz_flags$z, whz_flags$iqr | whz_flags$z))
@@ -518,12 +568,12 @@ plot_outlier_box <- function() {
           outline = FALSE, ylim = c(y_range[1] - y_pad, y_range[2] + y_pad))
   for (i in 1:2) {
     sub <- d[d$variable == c("WAZ", "WHZ")[i] & d$flagged & !is.na(d$value), ]
-    points(jitter(rep(i, nrow(sub)), amount = 0.07), sub$value, pch = 19, col = "#f16913", cex = 0.6)
+    points(jitter(rep(i, nrow(sub)), amount = 0.07), sub$value, pch = 19, col = publication_style$outlier_col, cex = 0.6)
     points(i, mean(d$value[d$variable == c("WAZ", "WHZ")[i]], na.rm = TRUE),
-           pch = 18, col = "#54278f", cex = 1.6)
+           pch = 18, col = publication_style$mean_col, cex = 1.6)
   }
   legend("topright", legend = c("IQR or |z| > 3 flagged", "Mean"), pch = c(19, 18),
-         col = c("#f16913", "#54278f"), bty = "n", cex = 0.85)
+         col = c(publication_style$outlier_col, publication_style$mean_col), bty = "n", cex = 0.85)
   plot_header_caption(
     "Figure 8. WAZ and WHZ outlier flags",
     "Nigeria NDHS 2024; orange points are flagged by at least one method",
@@ -548,9 +598,21 @@ table_text <- function(tbl, max_rows = 20) {
   capture.output(print(tbl, row.names = FALSE, right = FALSE))
 }
 
+report_total_pages <- 18
+report_page_counter <- 0
+
+add_page_number <- function() {
+  report_page_counter <<- report_page_counter + 1
+  mtext(
+    sprintf("Page %d of %d", report_page_counter, report_total_pages),
+    side = 3, adj = 1, line = 3.7, cex = 0.65, col = "#666666"
+  )
+}
+
 add_text_page <- function(title, body_lines, cex = 0.72) {
   plot.new()
   text(0.02, 0.97, title, adj = c(0, 1), cex = 1.15, font = 2)
+  add_page_number()
   y <- 0.91
   for (line in body_lines) {
     if (line == "") {
@@ -561,6 +623,7 @@ add_text_page <- function(title, body_lines, cex = 0.72) {
     }
     if (y < 0.04) {
       plot.new()
+      add_page_number()
       y <- 0.97
     }
   }
@@ -664,12 +727,19 @@ add_text_page("Task B Continued",
                 "", "Table 5. Underweight prevalence by subgroup", table_text(underweight_by_group, 40),
                 "", wrap_lines(interpret_group)))
 plot_waz_hist()
+add_page_number()
 plot_whz_hist()
+add_page_number()
 plot_waz_region_box()
+add_page_number()
 plot_whz_wealth_violin()
+add_page_number()
 plot_waz_breastfeeding_violin()
+add_page_number()
 plot_mean_waz_religion()
+add_page_number()
 plot_corr_heatmap()
+add_page_number()
 add_text_page("Task D Correlation and Outliers",
               c("Table 6. Ranked Spearman pairs", table_text(ranked_pairs, 20),
                 "", wrap_lines(interpret_cor),
@@ -677,6 +747,7 @@ add_text_page("Task D Correlation and Outliers",
                 "", "Table 8. Outlier decision table", table_text(decision_table),
                 "", wrap_lines(interpret_outliers)))
 plot_outlier_box()
+add_page_number()
 add_text_page("Task E Research Questions and Conclusion",
               c("Table 9. Future research questions", table_text(rq_table, 10),
                 "", "Conclusion", wrap_lines(conclusion, 92)))
