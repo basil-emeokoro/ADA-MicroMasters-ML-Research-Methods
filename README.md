@@ -59,8 +59,7 @@ The objective extends beyond completing weekly assignments. This monorepo docume
 |-- CITATION.cff
 |-- LICENSE
 |-- PROJECT_NOTES.md
-|-- AGENT_NOTES.md
-|-- .github/
+||-- .github/
 |   `-- workflows/
 |       `-- r-check.yml
 |-- week01-eda/
