@@ -1,15 +1,16 @@
 # ADA MicroMasters ML, AI & Research Methods Portfolio
 
-This repository is the permanent research portfolio for Basil Oforbuike Emeokoro's 12-week ADA Global Academy MicroMasters programme in Data Science, Machine Learning, AI, and Research Methods.
+This repository is the permanent research portfolio for Basil Oforbuike Emeokoro's 12-week ADA Global Academy MicroMasters programme in Data Science, Artificial Intelligence, Machine Learning, and Research Methods.
 
-It is organized as a professional monorepo rather than a single coursework folder. Each week is kept as a top-level module with assignment outputs, reproducible code, selected resources, notes, and documentation.
+The objective extends beyond completing weekly assignments. This monorepo documents reproducible analyses, statistical modelling, explainable AI, end-to-end data science workflows, scientific reporting, and clean software engineering practice.
 
 ## Repository Objectives
 
-- Build a 12-week evidence trail of applied data science and research-methods work.
+- Build research-quality data science projects across the 12-week programme.
+- Apply statistical and machine learning techniques to real-world datasets.
 - Keep analysis code, reports, figures, tables, and notes reproducible.
-- Practice clean repository organization, version control, and research documentation.
-- Develop a portfolio suitable for academic review, professional reference, and future project reuse.
+- Practice transparent research documentation and version control.
+- Develop a portfolio suitable for academic, research, and industry opportunities.
 
 ## Weekly Roadmap
 
@@ -28,6 +29,21 @@ It is organized as a professional monorepo rather than a single coursework folde
 | Week 11 | To be added | Planned |
 | Week 12 | To be added | Planned |
 
+## Topics Covered
+
+- Exploratory data analysis
+- Statistical inference
+- Data visualization
+- Feature engineering
+- Machine learning
+- Model evaluation
+- Explainable AI
+- Research methodology
+- Predictive analytics
+- Model deployment
+- Scientific writing
+- Reproducible research
+
 ## Repository Structure
 
 ```text
@@ -44,12 +60,14 @@ It is organized as a professional monorepo rather than a single coursework folde
 └── docs/
 ```
 
+Each weekly folder is intended to contain source code, reports, visualizations, documentation, selected resources, and reproducible workflows. Datasets are included only where redistribution is permitted.
+
 ## Technologies Used
 
-- R for statistical analysis, data cleaning, visualization, and report generation.
-- Python and Jupyter for future notebooks and research workflows.
+- R, RStudio, base R, tidyverse-style workflows where packages are available.
+- Python, Jupyter, pandas, NumPy, Matplotlib, Seaborn, and scikit-learn for future weeks.
 - Git and GitHub for version control and portfolio publication.
-- CSV, PDF, and image outputs for reproducible reporting.
+- PDF, CSV, and image outputs for reproducible reporting.
 
 ## Reproducibility Statement
 
@@ -62,6 +80,18 @@ Each week should include the code, report, figures, tables, and notes needed to 
 - Avoid committing temporary files, caches, IDE settings, and private data.
 - Use clear folder boundaries for weekly work.
 - Record major changes in `CHANGELOG.md`.
+- Prefer modular, readable code and explicit assumptions.
+
+## Guiding Principles
+
+- Reproducibility
+- Transparency
+- Clean code
+- Modular design
+- Statistical rigor
+- Explainability
+- Ethical AI
+- Research integrity
 
 ## Git Workflow
 
@@ -76,6 +106,7 @@ Future weeks should be added under `week02` through `week12` without restructuri
 ## Author
 
 Basil Oforbuike Emeokoro  
+Psychometrician | Data Scientist | AI & Machine Learning Researcher | Software Developer  
 Email: basil.emeokoro@gmail.com
 
 ## License
