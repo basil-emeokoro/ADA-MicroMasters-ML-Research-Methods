@@ -598,7 +598,7 @@ table_text <- function(tbl, max_rows = 20) {
   capture.output(print(tbl, row.names = FALSE, right = FALSE))
 }
 
-report_total_pages <- 18
+report_total_pages <- 17
 report_page_counter <- 0
 
 add_page_number <- function() {
@@ -702,37 +702,29 @@ add_task_e_page <- function(rq_table, conclusion) {
 
   y <- 0.90
   text(0.02, y, "Table 9. Future research questions", adj = c(0, 1), cex = 0.82, font = 2)
-  y <- y - 0.045
-
-  text(0.02, y, "RQ", adj = c(0, 1), cex = 0.68, font = 2)
-  text(0.08, y, "Research question", adj = c(0, 1), cex = 0.68, font = 2)
-  text(0.60, y, "Evidence", adj = c(0, 1), cex = 0.68, font = 2)
-  text(0.74, y, "Suggested method", adj = c(0, 1), cex = 0.68, font = 2)
-  y <- y - 0.028
-  segments(0.02, y + 0.01, 0.97, y + 0.01, col = "#999999")
+  text(0.55, y, "Conclusion", adj = c(0, 1), cex = 0.86, font = 2)
+  y <- y - 0.035
 
   for (i in seq_len(nrow(rq_table))) {
-    row_start <- y
-    text(0.02, row_start, rq_table$RQ[i], adj = c(0, 1), cex = 0.61, family = "sans")
-    q_lines <- wrap_by_plot_width(rq_table$Research_question[i], max_width = 0.49, cex = 0.61, family = "sans")
-    e_lines <- wrap_by_plot_width(rq_table$Evidence[i], max_width = 0.11, cex = 0.61, family = "sans")
-    m_lines <- wrap_by_plot_width(rq_table$Suggested_method[i], max_width = 0.23, cex = 0.61, family = "sans")
-    max_lines <- max(length(q_lines), length(e_lines), length(m_lines))
-
-    for (j in seq_len(max_lines)) {
-      if (j <= length(q_lines)) text(0.08, y, q_lines[j], adj = c(0, 1), cex = 0.61, family = "sans")
-      if (j <= length(e_lines)) text(0.60, y, e_lines[j], adj = c(0, 1), cex = 0.61, family = "sans")
-      if (j <= length(m_lines)) text(0.74, y, m_lines[j], adj = c(0, 1), cex = 0.61, family = "sans")
-      y <- y - 0.024
-    }
-    y <- y - 0.012
+    text(0.02, y, rq_table$RQ[i], adj = c(0, 1), cex = 0.70, font = 2, family = "sans")
+    y <- y - 0.025
+    y <- draw_paragraph(rq_table$Research_question[i], x = 0.04, y = y, max_width = 0.46,
+                        cex = 0.59, line_height = 0.026, family = "sans", justify = FALSE)
+    y <- y - 0.004
+    text(0.04, y, paste("Evidence:", rq_table$Evidence[i]), adj = c(0, 1), cex = 0.58,
+         font = 2, family = "sans")
+    y <- y - 0.024
+    y <- draw_paragraph(paste("Suggested method:", rq_table$Suggested_method[i]), x = 0.04, y = y,
+                        max_width = 0.46, cex = 0.58, line_height = 0.024,
+                        family = "sans", justify = FALSE)
+    y <- y - 0.018
+    segments(0.02, y + 0.006, 0.50, y + 0.006, col = "#DDDDDD")
+    y <- y - 0.014
   }
 
-  y <- y - 0.014
-  text(0.02, y, "Conclusion", adj = c(0, 1), cex = 0.86, font = 2)
-  y <- y - 0.045
-  y <- draw_paragraph(conclusion, x = 0.08, y = y, max_width = 0.84, cex = 0.66,
-                      line_height = 0.031, family = "mono", justify = TRUE)
+  y <- 0.855
+  y <- draw_paragraph(conclusion, x = 0.55, y = y, max_width = 0.41, cex = 0.60,
+                      line_height = 0.027, family = "mono", justify = TRUE)
   invisible(y)
 }
 
