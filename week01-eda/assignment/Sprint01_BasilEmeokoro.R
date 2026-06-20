@@ -4,23 +4,79 @@
 # Author: Basil Emeokoro
 #
 # This script is self-contained in base R. It creates cleaned variables, tables,
-# eight figures, and a PDF report in the Assignment folder.
+# eight figures, and a PDF report in week01-eda/assignment.
 ###############################################################################
 
 options(stringsAsFactors = FALSE)
 
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
-script_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)
-script_path <- if (length(script_arg) > 0) sub("^--file=", "", script_arg[1]) else NULL
-assignment_dir <- normalizePath(dirname(script_path %||% getwd()), winslash = "/", mustWork = FALSE)
-if (!dir.exists(assignment_dir) || basename(assignment_dir) != "Assignment") {
-  assignment_dir <- normalizePath(getwd(), winslash = "/", mustWork = FALSE)
+normalize_dir <- function(path) normalizePath(path, winslash = "/", mustWork = FALSE)
+
+get_script_path <- function() {
+  script_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)
+  if (length(script_arg) > 0) return(normalize_dir(sub("^--file=", "", script_arg[1])))
+
+  frame_files <- vapply(sys.frames(), function(frame) frame$ofile %||% NA_character_, character(1))
+  frame_files <- frame_files[!is.na(frame_files)]
+  if (length(frame_files) > 0) return(normalize_dir(frame_files[length(frame_files)]))
+
+  if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+    context <- tryCatch(rstudioapi::getSourceEditorContext(), error = function(e) NULL)
+    if (!is.null(context$path) && nzchar(context$path)) return(normalize_dir(context$path))
+  }
+
+  NULL
 }
-root_dir <- normalizePath(file.path(assignment_dir, ".."), winslash = "/", mustWork = FALSE)
+
+find_upward <- function(start_dir, predicate, max_depth = 8) {
+  current <- normalize_dir(start_dir)
+  for (i in seq_len(max_depth)) {
+    if (predicate(current)) return(current)
+    parent <- normalize_dir(file.path(current, ".."))
+    if (identical(parent, current)) break
+    current <- parent
+  }
+  NA_character_
+}
+
+script_path <- get_script_path()
+start_candidates <- unique(c(
+  if (!is.null(script_path)) dirname(script_path),
+  getwd()
+))
+
+repo_dir <- NA_character_
+for (candidate in start_candidates) {
+  found <- find_upward(candidate, function(path) {
+    dir.exists(file.path(path, ".git")) ||
+      (dir.exists(file.path(path, "week01-eda")) && file.exists(file.path(path, "README.md")))
+  })
+  if (!is.na(found)) {
+    repo_dir <- found
+    break
+  }
+}
+if (is.na(repo_dir)) {
+  stop("Could not locate repository root. Run from the repository, week01-eda/assignment, or source the script file.")
+}
+
+assignment_dir <- normalize_dir(file.path(repo_dir, "week01-eda", "assignment"))
+if (!dir.exists(assignment_dir)) {
+  if (!is.null(script_path) && basename(dirname(script_path)) == "assignment") {
+    assignment_dir <- normalize_dir(dirname(script_path))
+  } else if (basename(getwd()) == "assignment") {
+    assignment_dir <- normalize_dir(getwd())
+  } else {
+    stop("Could not locate week01-eda/assignment directory.")
+  }
+}
+
+root_dir <- normalize_dir(file.path(assignment_dir, ".."))
 tasks_dir <- file.path(root_dir, "Tasks")
-legacy_tasks_dir <- file.path(root_dir, "..", "Tasks")
+legacy_tasks_dir <- file.path(repo_dir, "Tasks")
 datasets_dir <- file.path(root_dir, "resources", "datasets")
+ci_mode <- identical(tolower(Sys.getenv("CI")), "true") || identical(tolower(Sys.getenv("GITHUB_ACTIONS")), "true")
 
 figures_dir <- file.path(assignment_dir, "figures")
 tables_dir <- file.path(assignment_dir, "tables")
@@ -42,7 +98,24 @@ dataset_candidates <- c(
   file.path(legacy_tasks_dir, "NGKR8BFL.csv")
 )
 csv_file <- dataset_candidates[file.exists(dataset_candidates)][1]
-if (is.na(csv_file)) stop("Could not find NGKR8BFL CSV in Assignment or Tasks folder.")
+if (is.na(csv_file)) {
+  stop(
+    "Could not find the DHS CSV dataset.\n",
+    "Expected one of: NGKR8BFL.csv or NGKR8BFL (1).csv\n",
+    "Checked assignment directory, week01-eda/resources/datasets, and local legacy Tasks folders.\n",
+    "For GitHub Actions, the workflow creates a synthetic fixture in week01-eda/resources/datasets before running this script."
+  )
+}
+if (ci_mode && grepl("resources/datasets/NGKR8BFL", csv_file, fixed = TRUE)) {
+  message("CI mode detected: using synthetic fixture at ", csv_file)
+}
+cat("Assignment directory:", assignment_dir, "\n")
+cat("Repository root:", repo_dir, "\n")
+cat("Figures directory:", figures_dir, "\n")
+cat("Tables directory:", tables_dir, "\n")
+cat("Outputs directory:", outputs_dir, "\n")
+cat("Report directory:", report_dir, "\n")
+cat("Dataset file:", csv_file, "\n")
 
 needed_vars <- c("hw70", "hw71", "hw72", "hw1", "b4", "b5", "m4", "v024", "v025",
                  "v106", "v701", "v130", "v190", "v136", "v137", "v005")
@@ -278,68 +351,107 @@ write.csv(ranked_pairs, file.path(tables_dir, "table_07_ranked_correlation_pairs
 write.csv(outlier_summary, file.path(tables_dir, "table_08_outlier_summary.csv"), row.names = FALSE)
 write.csv(decision_table, file.path(tables_dir, "table_09_outlier_decision.csv"), row.names = FALSE)
 
-ggsave <- function(filename, plot_fun, width = 8, height = 6, dpi = 300) {
+ggsave <- function(filename, plot_fun, width = 10, height = 7, dpi = 300) {
   grDevices::png(filename, width = width, height = height, units = "in", res = dpi)
   on.exit(grDevices::dev.off(), add = TRUE)
   plot_fun()
 }
 
-draw_subtitle <- function(main, sub) title(main = main, sub = sub, cex.main = 1.1, cex.sub = 0.85)
+plot_header_caption <- function(main, subtitle, caption, caption_line = 4.2) {
+  title(main = main, line = 2.2, cex.main = 1.15)
+  mtext(subtitle, side = 3, line = 0.65, cex = 0.9)
+  mtext(caption, side = 1, line = caption_line, cex = 0.82)
+}
 
 plot_waz_hist <- function() {
+  op <- par(mar = c(6.5, 5.5, 5, 2))
+  on.exit(par(op), add = TRUE)
   hist(df$waz, breaks = 40, col = "#9ecae1", border = "white",
        xlab = "Weight-for-age z-score (WAZ)", ylab = "Number of children",
-       main = "Figure 1. Distribution of WAZ")
+       main = "")
   abline(v = c(-2, -3), col = c("#d7301f", "#7f0000"), lwd = 2, lty = c(2, 3))
   legend("topright", legend = c("-2 underweight cutoff", "-3 severe cutoff"), lty = c(2, 3),
          col = c("#d7301f", "#7f0000"), bty = "n")
-  title(sub = paste0("Nigeria NDHS 2024; underweight prevalence = ",
-                     format_num(prevalence_table$Percent[1], 1), "%"))
+  plot_header_caption(
+    "Figure 1. Distribution of WAZ",
+    paste0("Nigeria NDHS 2024; underweight prevalence = ", format_num(prevalence_table$Percent[1], 1), "%"),
+    "Caption: WAZ distribution with clinical underweight and severe underweight cutoffs."
+  )
 }
 
 plot_whz_hist <- function() {
+  op <- par(mar = c(6.5, 5.5, 5, 2))
+  on.exit(par(op), add = TRUE)
   hist(df$whz, breaks = 40, col = "#a1d99b", border = "white",
        xlab = "Weight-for-height z-score (WHZ)", ylab = "Number of children",
-       main = "Figure 2. Distribution of WHZ")
+       main = "")
   abline(v = c(-2, -3), col = c("#d7301f", "#7f0000"), lwd = 2, lty = c(2, 3))
   legend("topright", legend = c("-2 wasting cutoff", "-3 severe cutoff"), lty = c(2, 3),
          col = c("#d7301f", "#7f0000"), bty = "n")
-  title(sub = paste0("Nigeria NDHS 2024; wasting prevalence = ",
-                     format_num(prevalence_table$Percent[3], 1), "%"))
+  plot_header_caption(
+    "Figure 2. Distribution of WHZ",
+    paste0("Nigeria NDHS 2024; wasting prevalence = ", format_num(prevalence_table$Percent[3], 1), "%"),
+    "Caption: WHZ distribution with wasting and severe wasting cutoffs."
+  )
 }
 
 plot_waz_region_box <- function() {
+  op <- par(mar = c(6.5, 9, 5, 2))
+  on.exit(par(op), add = TRUE)
   med <- tapply(df$waz, df$region, median, na.rm = TRUE)
   ordered_region <- names(sort(med))
   boxplot(waz ~ factor(region, levels = ordered_region), data = df, las = 2,
+          horizontal = TRUE,
           col = "#fdd0a2", border = "#636363",
-          xlab = "Region sorted from worst to best median WAZ",
-          ylab = "Weight-for-age z-score (WAZ)",
-          main = "Figure 3. WAZ by region")
-  abline(h = -2, col = "#d7301f", lwd = 2, lty = 2)
-  title(sub = "Nigeria NDHS 2024; red dashed line marks underweight cutoff")
+          xlab = "Weight-for-age z-score (WAZ)",
+          ylab = "",
+          main = "")
+  abline(v = -2, col = "#d7301f", lwd = 2, lty = 2)
+  plot_header_caption(
+    "Figure 3. WAZ by region",
+    "Nigeria NDHS 2024; red dashed line marks underweight cutoff",
+    "Caption: Regions are sorted by median WAZ from lowest to highest."
+  )
 }
 
 plot_whz_wealth_violin <- function() {
+  op <- par(mar = c(7.5, 5.5, 5, 2))
+  on.exit(par(op), add = TRUE)
   vals <- split(df$whz, df$wealth)
   plot(NA, xlim = c(0.5, length(vals) + 0.5), ylim = range(df$whz, na.rm = TRUE),
        xaxt = "n", xlab = "Wealth quintile", ylab = "Weight-for-height z-score (WHZ)",
-       main = "Figure 4. WHZ by wealth quintile")
-  axis(1, seq_along(vals), names(vals), las = 2)
+       main = "")
+  axis(1, seq_along(vals), names(vals), las = 1)
   for (i in seq_along(vals)) draw_violin(vals[[i]], i, col = "#c7e9c0")
   abline(h = -2, col = "#d7301f", lwd = 2, lty = 2)
-  title(sub = "Nigeria NDHS 2024; red dashed line marks wasting cutoff")
+  plot_header_caption(
+    "Figure 4. WHZ by wealth quintile",
+    "Nigeria NDHS 2024; red dashed line marks wasting cutoff",
+    "Caption: WHZ density by household wealth quintile with the wasting cutoff."
+  )
 }
 
 plot_waz_breastfeeding_violin <- function() {
-  vals <- split(df$waz, df$breastfeeding)
+  op <- par(mar = c(7, 5.5, 5, 2))
+  on.exit(par(op), add = TRUE)
+  df$breastfeeding_short <- factor(
+    as.character(df$breastfeeding),
+    levels = c("Never", "Still breastfeeding", "Stopped"),
+    labels = c("Never", "Still BF", "Stopped")
+  )
+  vals <- split(df$waz, df$breastfeeding_short)
   plot(NA, xlim = c(0.5, length(vals) + 0.5), ylim = range(df$waz, na.rm = TRUE),
        xaxt = "n", xlab = "Breastfeeding status", ylab = "Weight-for-age z-score (WAZ)",
-       main = "Figure 5. WAZ by breastfeeding status")
-  axis(1, seq_along(vals), names(vals), las = 2)
+       main = "")
+  axis(1, seq_along(vals), names(vals), las = 1)
   for (i in seq_along(vals)) draw_violin(vals[[i]], i, col = "#fdae6b")
   abline(h = -2, col = "#d7301f", lwd = 2, lty = 2)
-  title(sub = "Nigeria NDHS 2024; red dashed line marks underweight cutoff")
+  plot_header_caption(
+    "Figure 5. WAZ by breastfeeding status",
+    "Nigeria NDHS 2024; red dashed line marks underweight cutoff",
+    "Caption: WAZ density across assignment-defined breastfeeding groups.",
+    caption_line = 4
+  )
 }
 
 draw_violin <- function(x, xpos, width = 0.35, col = "#cccccc") {
@@ -353,6 +465,8 @@ draw_violin <- function(x, xpos, width = 0.35, col = "#cccccc") {
 }
 
 plot_mean_waz_religion <- function() {
+  op <- par(mar = c(6.5, 5.5, 5, 2))
+  on.exit(par(op), add = TRUE)
   stats_by_rel <- do.call(rbind, lapply(levels(df$religion), function(g) {
     ms <- mean_se(df$waz[df$religion == g])
     data.frame(religion = g, mean = ms["mean"], se = ms["se"])
@@ -360,33 +474,48 @@ plot_mean_waz_religion <- function() {
   bp <- barplot(stats_by_rel$mean, names.arg = stats_by_rel$religion, col = "#bcbddc",
                 ylim = range(c(stats_by_rel$mean - stats_by_rel$se, stats_by_rel$mean + stats_by_rel$se, 0), na.rm = TRUE),
                 xlab = "Religion", ylab = "Mean WAZ",
-                main = "Figure 6. Mean WAZ by religion")
+                main = "")
   arrows(bp, stats_by_rel$mean - stats_by_rel$se, bp, stats_by_rel$mean + stats_by_rel$se,
          angle = 90, code = 3, length = 0.05, col = "#252525")
-  title(sub = "Nigeria NDHS 2024; error bars show mean +/- standard error")
+  plot_header_caption(
+    "Figure 6. Mean WAZ by religion",
+    "Nigeria NDHS 2024; error bars show mean +/- standard error",
+    "Caption: Mean WAZ by collapsed religion group with standard-error bars."
+  )
 }
 
 plot_corr_heatmap <- function() {
-  op <- par(mar = c(7, 7, 4, 2))
+  op <- par(mar = c(12, 9, 5.5, 3))
   on.exit(par(op), add = TRUE)
   m <- cor_matrix[nrow(cor_matrix):1, ]
+  axis_labels <- c("WAZ", "WHZ", "Wealth", "Mother educ.", "Household size", "Under-5 kids")
+  names(axis_labels) <- colnames(cor_matrix)
   image(seq_len(ncol(m)), seq_len(nrow(m)), t(m), axes = FALSE,
         col = grDevices::colorRampPalette(c("#2166ac", "white", "#b2182b"))(101),
-        zlim = c(-1, 1), xlab = "", ylab = "", main = "Figure 7. Spearman correlation heatmap")
-  axis(1, seq_len(ncol(m)), colnames(m), las = 2)
-  axis(2, seq_len(nrow(m)), rev(rownames(cor_matrix)), las = 2)
+        zlim = c(-1, 1), xlab = "", ylab = "", main = "")
+  axis(1, seq_len(ncol(m)), axis_labels[colnames(m)], las = 2, cex.axis = 0.78)
+  axis(2, seq_len(nrow(m)), rev(axis_labels[rownames(cor_matrix)]), las = 1, cex.axis = 0.78)
   for (i in seq_len(ncol(m))) {
-    for (j in seq_len(nrow(m))) text(i, j, format_num(m[j, i], 2), cex = 0.8)
+    for (j in seq_len(nrow(m))) text(i, j, format_num(m[j, i], 2), cex = 0.78)
   }
-  title(sub = "Nigeria NDHS 2024; blue is negative and red is positive")
+  plot_header_caption(
+    "Figure 7. Spearman correlation heatmap",
+    "Nigeria NDHS 2024; blue is negative and red is positive",
+    "Caption: Spearman correlation matrix for anthropometry and household predictors.",
+    caption_line = 8.2
+  )
 }
 
 plot_outlier_box <- function() {
+  op <- par(mar = c(7, 5.5, 5, 2))
+  on.exit(par(op), add = TRUE)
   d <- data.frame(value = c(df$waz, df$whz), variable = rep(c("WAZ", "WHZ"), each = nrow(df)),
                   flagged = c(waz_flags$iqr | waz_flags$z, whz_flags$iqr | whz_flags$z))
+  y_range <- range(d$value, na.rm = TRUE)
+  y_pad <- diff(y_range) * 0.08
   boxplot(value ~ variable, data = d, col = c("#9ecae1", "#a1d99b"),
-          xlab = "Outcome", ylab = "Z-score", main = "Figure 8. WAZ and WHZ outlier flags",
-          outline = FALSE)
+          xlab = "Outcome", ylab = "Z-score", main = "",
+          outline = FALSE, ylim = c(y_range[1] - y_pad, y_range[2] + y_pad))
   for (i in 1:2) {
     sub <- d[d$variable == c("WAZ", "WHZ")[i] & d$flagged & !is.na(d$value), ]
     points(jitter(rep(i, nrow(sub)), amount = 0.07), sub$value, pch = 19, col = "#f16913", cex = 0.6)
@@ -394,21 +523,25 @@ plot_outlier_box <- function() {
            pch = 18, col = "#54278f", cex = 1.6)
   }
   legend("topright", legend = c("IQR or |z| > 3 flagged", "Mean"), pch = c(19, 18),
-         col = c("#f16913", "#54278f"), bty = "n")
-  title(sub = "Nigeria NDHS 2024; orange points are flagged by at least one method")
+         col = c("#f16913", "#54278f"), bty = "n", cex = 0.85)
+  plot_header_caption(
+    "Figure 8. WAZ and WHZ outlier flags",
+    "Nigeria NDHS 2024; orange points are flagged by at least one method",
+    "Caption: Side-by-side WAZ and WHZ box plots with orange flagged points and purple means."
+  )
 }
 
-figure_files <- c(
-  "figure_01_waz_histogram.png" = plot_waz_hist,
-  "figure_02_whz_histogram.png" = plot_whz_hist,
-  "figure_03_waz_by_region_boxplot.png" = plot_waz_region_box,
-  "figure_04_whz_by_wealth_violin.png" = plot_whz_wealth_violin,
-  "figure_05_waz_by_breastfeeding_violin.png" = plot_waz_breastfeeding_violin,
-  "figure_06_mean_waz_by_religion.png" = plot_mean_waz_religion,
-  "figure_07_spearman_heatmap.png" = plot_corr_heatmap,
-  "figure_08_outlier_boxplot.png" = plot_outlier_box
+figure_files <- list(
+  list(name = "figure_01_waz_histogram.png", fun = plot_waz_hist, width = 10, height = 7),
+  list(name = "figure_02_whz_histogram.png", fun = plot_whz_hist, width = 10, height = 7),
+  list(name = "figure_03_waz_by_region_boxplot.png", fun = plot_waz_region_box, width = 11, height = 7.5),
+  list(name = "figure_04_whz_by_wealth_violin.png", fun = plot_whz_wealth_violin, width = 10.5, height = 7.5),
+  list(name = "figure_05_waz_by_breastfeeding_violin.png", fun = plot_waz_breastfeeding_violin, width = 10.5, height = 7.5),
+  list(name = "figure_06_mean_waz_by_religion.png", fun = plot_mean_waz_religion, width = 10, height = 7),
+  list(name = "figure_07_spearman_heatmap.png", fun = plot_corr_heatmap, width = 11, height = 8.5),
+  list(name = "figure_08_outlier_boxplot.png", fun = plot_outlier_box, width = 11, height = 7.5)
 )
-for (nm in names(figure_files)) ggsave(file.path(figures_dir, nm), figure_files[[nm]])
+for (fig in figure_files) ggsave(file.path(figures_dir, fig$name), fig$fun, fig$width, fig$height)
 
 table_text <- function(tbl, max_rows = 20) {
   if (nrow(tbl) > max_rows) tbl <- tbl[seq_len(max_rows), , drop = FALSE]
@@ -503,7 +636,7 @@ conclusion <- paste0(
 writeLines(strwrap(conclusion, width = 100), file.path(outputs_dir, "conclusion.txt"))
 
 report_pdf <- file.path(assignment_dir, "Sprint01_BasilEmeokoro.pdf")
-grDevices::pdf(report_pdf, width = 8.27, height = 11.69, onefile = TRUE)
+grDevices::pdf(report_pdf, width = 11, height = 8.5, onefile = TRUE)
 add_text_page("Sprint 01 Assignment: Child Undernutrition in Nigeria",
               c("Basil Emeokoro",
                 "ADA Global Academy MicroMasters in Data Science, AI & Research Methods",
@@ -531,19 +664,12 @@ add_text_page("Task B Continued",
                 "", "Table 5. Underweight prevalence by subgroup", table_text(underweight_by_group, 40),
                 "", wrap_lines(interpret_group)))
 plot_waz_hist()
-mtext("Caption: WAZ distribution with clinical underweight and severe underweight cutoffs.", side = 1, line = 4, cex = 0.8)
 plot_whz_hist()
-mtext("Caption: WHZ distribution with wasting and severe wasting cutoffs.", side = 1, line = 4, cex = 0.8)
 plot_waz_region_box()
-mtext("Caption: Regions are sorted by median WAZ from lowest to highest.", side = 1, line = 5, cex = 0.8)
 plot_whz_wealth_violin()
-mtext("Caption: WHZ density by household wealth quintile with the wasting cutoff.", side = 1, line = 5, cex = 0.8)
 plot_waz_breastfeeding_violin()
-mtext("Caption: WAZ density across the three assignment-defined breastfeeding groups.", side = 1, line = 5, cex = 0.8)
 plot_mean_waz_religion()
-mtext("Caption: Mean WAZ by collapsed religion group with standard-error bars.", side = 1, line = 4, cex = 0.8)
 plot_corr_heatmap()
-mtext("Caption: Spearman correlation matrix for anthropometry and household predictors.", side = 1, line = 5, cex = 0.8)
 add_text_page("Task D Correlation and Outliers",
               c("Table 6. Ranked Spearman pairs", table_text(ranked_pairs, 20),
                 "", wrap_lines(interpret_cor),
@@ -551,23 +677,10 @@ add_text_page("Task D Correlation and Outliers",
                 "", "Table 8. Outlier decision table", table_text(decision_table),
                 "", wrap_lines(interpret_outliers)))
 plot_outlier_box()
-mtext("Caption: Side-by-side WAZ and WHZ box plots with orange flagged points and purple means.", side = 1, line = 4, cex = 0.8)
 add_text_page("Task E Research Questions and Conclusion",
               c("Table 9. Future research questions", table_text(rq_table, 10),
                 "", "Conclusion", wrap_lines(conclusion, 92)))
 grDevices::dev.off()
-
-readme <- c(
-  "# Sprint 01 Assignment - Basil Emeokoro",
-  "",
-  "Run `Sprint01_BasilEmeokoro.R` from this Assignment folder.",
-  "",
-  "The script looks for `NGKR8BFL (1).csv` or `NGKR8BFL.csv` in the Assignment folder first, then in the sibling `Tasks` folder.",
-  "It creates cleaned tables in `tables/`, figures in `figures/`, text outputs in `outputs/`, and the final PDF report at `Sprint01_BasilEmeokoro.pdf`.",
-  "",
-  "No contributed R packages are required; the script is written in base R so it can run on this workstation without installing packages."
-)
-writeLines(readme, file.path(assignment_dir, "README.md"))
 
 cat("Created report:", report_pdf, "\n")
 cat("Created figures in:", figures_dir, "\n")

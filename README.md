@@ -59,7 +59,6 @@ The objective extends beyond completing weekly assignments. This monorepo docume
 |-- CITATION.cff
 |-- LICENSE
 |-- PROJECT_NOTES.md
-|-- AGENT_NOTES.md
 |-- .github/
 |   `-- workflows/
 |       `-- r-check.yml
@@ -84,9 +83,9 @@ Each weekly folder is intended to contain source code, reports, visualizations, 
 
 ## Reproducibility Statement
 
-Each week should include the code, report, figures, tables, and notes needed to understand and rerun the work. Large or restricted datasets are not committed unless redistribution is permitted. When a dataset cannot be published, the relevant README explains where it should be placed locally and how the scripts locate it.
+Each week will include the code, report, figures, tables, and notes needed to understand and rerun the work. Large or restricted datasets are not committed unless redistribution is permitted. When a dataset cannot be published, the relevant README explains where it should be placed locally and how the scripts locate it.
 
-For Week 1, the DHS raw CSV is not committed. To reproduce the full analysis locally, place `NGKR8BFL.csv` or `NGKR8BFL (1).csv` in `week01-eda/resources/datasets/` and run the assignment script from `week01-eda/assignment/`.
+For Week 1, the DHS raw CSV is not committed. The full analysis can be reproduced locally by placing `NGKR8BFL.csv` or `NGKR8BFL (1).csv` in `week01-eda/resources/datasets/` and running the assignment script from `week01-eda/assignment/`.
 
 ## Software Engineering Practices
 
@@ -111,7 +110,7 @@ For Week 1, the DHS raw CSV is not committed. To reproduce the full analysis loc
 
 ## Git Workflow
 
-Work for each week should be committed as a focused change set using descriptive commit messages, for example:
+Work for each week is committed as a focused change set using descriptive commit messages, for example:
 
 ```text
 feat(week01): complete exploratory analysis of Nigeria DHS child undernutrition dataset
