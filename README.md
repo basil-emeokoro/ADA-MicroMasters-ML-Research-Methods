@@ -40,6 +40,7 @@ The objective extends beyond completing weekly assignments. This monorepo docume
 | Document | Purpose |
 | --- | --- |
 | [PROJECT_STATUS.md](PROJECT_STATUS.md) | Executive dashboard for weekly progress, repository health, CI, milestones, and release status. |
+| [BUILD.md](BUILD.md) | Clean-clone reproduction guide for Week 1, including dataset placement, execution commands, and expected outputs. |
 | [CHANGELOG.md](CHANGELOG.md) | Chronological record of weekly work, major findings, and repository changes. |
 | [PROJECT_NOTES.md](PROJECT_NOTES.md) | Operating notes for future coding agents and continuation work. |
 | [CITATIONS.md](CITATIONS.md) | Catalogue of datasets, software, packages, standards, and external resources. |
@@ -66,6 +67,7 @@ The objective extends beyond completing weekly assignments. This monorepo docume
 ```text
 .
 |-- README.md
+|-- BUILD.md
 |-- CHANGELOG.md
 |-- CITATIONS.md
 |-- CITATION.cff

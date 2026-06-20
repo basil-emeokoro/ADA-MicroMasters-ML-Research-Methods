@@ -39,6 +39,14 @@
 - Added `docs/releases/v0.1_release_notes.md` for manual creation of the Week 1 GitHub Release when GitHub CLI is unavailable.
 - Updated the root README with a repository documentation index.
 
+## Week 1 hardening pass
+
+- Added an interactive plotting switch so RStudio sessions can show plots while automated `Rscript` and CI runs remain headless.
+- Exported `sessionInfo()` to `week01-eda/assignment/outputs/sessionInfo.txt`.
+- Normalized PDF creation/modification date metadata to reduce binary churn across repeated builds.
+- Added `BUILD.md` with clean-clone reproduction steps for Week 1.
+- Tightened `CITATIONS.md` and `PROJECT_STATUS.md` to keep repository documentation concise and operational.
+
 ## Week 2
 
 - Planned.

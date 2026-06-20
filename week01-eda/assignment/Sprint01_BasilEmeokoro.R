@@ -1,13 +1,19 @@
 ###############################################################################
-# ADA Global Academy MicroMasters - Sprint 01 Assignment
+# ADA Global Academy MicroMasters
+# Week 1 - Exploratory Data Analysis
 # Child Undernutrition in Nigeria: WAZ and WHZ EDA using NDHS 2024
-# Author: Basil Emeokoro
+# Version: 0.1
+# Last Updated: 2026-06-20
+# Author: Basil Oforbuike Emeokoro
 #
 # This script is self-contained in base R. It creates cleaned variables, tables,
-# eight figures, and a PDF report in week01-eda/assignment.
+# eight figures, a PDF report, and reproducibility metadata.
 ###############################################################################
 
 options(stringsAsFactors = FALSE)
+
+SHOW_PLOTS <- interactive() && !identical(tolower(Sys.getenv("SHOW_PLOTS")), "false")
+set.seed(20260620)
 
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
@@ -393,10 +399,50 @@ theme_publication <- function(plot_type = "default") {
   )
 }
 
-ggsave <- function(filename, plot_fun, width = 10, height = 7, dpi = publication_style$dpi) {
+save_figure <- function(filename, plot_fun, width = 10, height = 7, dpi = publication_style$dpi) {
   grDevices::png(filename, width = width, height = height, units = "in", res = dpi)
-  on.exit(grDevices::dev.off(), add = TRUE)
-  plot_fun()
+  tryCatch(plot_fun(), error = function(e) {
+    if (grDevices::dev.cur() > 1) grDevices::dev.off()
+    stop(e)
+  })
+  if (grDevices::dev.cur() > 1) grDevices::dev.off()
+  if (SHOW_PLOTS) plot_fun()
+  invisible(filename)
+}
+
+scrub_pdf_metadata <- function(filename) {
+  bytes <- readBin(filename, what = "raw", n = file.info(filename)$size)
+
+  find_raw <- function(x, pattern) {
+    if (length(x) < length(pattern)) return(integer(0))
+    candidates <- which(x[seq_len(length(x) - length(pattern) + 1)] == pattern[1])
+    candidates[vapply(candidates, function(i) {
+      identical(x[i:(i + length(pattern) - 1)], pattern)
+    }, logical(1))]
+  }
+
+  replace_pdf_date <- function(x, field, replacement = "D:20260620000000") {
+    prefix <- charToRaw(paste0("/", field, " ("))
+    pos <- find_raw(x, prefix)
+    if (length(pos) == 0) return(x)
+    start <- pos[1] + length(prefix)
+    end_candidates <- which(x[start:length(x)] == charToRaw(")"))
+    if (length(end_candidates) == 0) return(x)
+    end <- start + end_candidates[1] - 2
+    replacement_raw <- charToRaw(replacement)
+    target_length <- end - start + 1
+    if (length(replacement_raw) > target_length) replacement_raw <- replacement_raw[seq_len(target_length)]
+    if (length(replacement_raw) < target_length) {
+      replacement_raw <- c(replacement_raw, rep(charToRaw("0"), target_length - length(replacement_raw)))
+    }
+    x[start:end] <- replacement_raw
+    x
+  }
+
+  bytes <- replace_pdf_date(bytes, "CreationDate")
+  bytes <- replace_pdf_date(bytes, "ModDate")
+  writeBin(bytes, filename)
+  invisible(filename)
 }
 
 plot_header_caption <- function(main, subtitle, caption, caption_line = 4.2) {
@@ -591,7 +637,7 @@ figure_files <- list(
   list(name = "figure_07_spearman_heatmap.png", fun = plot_corr_heatmap, width = 11, height = 8.5),
   list(name = "figure_08_outlier_boxplot.png", fun = plot_outlier_box, width = 11, height = 7.5)
 )
-for (fig in figure_files) ggsave(file.path(figures_dir, fig$name), fig$fun, fig$width, fig$height)
+for (fig in figure_files) save_figure(file.path(figures_dir, fig$name), fig$fun, fig$width, fig$height)
 
 table_text <- function(tbl, max_rows = 20) {
   if (nrow(tbl) > max_rows) tbl <- tbl[seq_len(max_rows), , drop = FALSE]
@@ -796,6 +842,7 @@ conclusion <- paste0(
   "The next analytical step should be a weighted multivariable model for underweight and wasting that adjusts for region, wealth, maternal education, household size, and child age."
 )
 writeLines(strwrap(conclusion, width = 100), file.path(outputs_dir, "conclusion.txt"))
+writeLines(capture.output(sessionInfo()), file.path(outputs_dir, "sessionInfo.txt"))
 
 report_pdf <- file.path(assignment_dir, "Sprint01_BasilEmeokoro.pdf")
 grDevices::pdf(report_pdf, width = 11, height = 8.5, onefile = TRUE)
@@ -849,7 +896,10 @@ plot_outlier_box()
 add_page_number()
 add_task_e_page(rq_table, conclusion)
 grDevices::dev.off()
+scrub_pdf_metadata(report_pdf)
 
 cat("Created report:", report_pdf, "\n")
 cat("Created figures in:", figures_dir, "\n")
 cat("Created tables in:", tables_dir, "\n")
+cat("Created session info:", file.path(outputs_dir, "sessionInfo.txt"), "\n")
+
