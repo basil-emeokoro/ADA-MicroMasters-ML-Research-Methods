@@ -17,3 +17,9 @@ The assignment includes:
 - A reproducible PDF report generated from `Sprint02_BasilEmeokoro.R`.
 
 Raw datasets are not committed. See `assignment/BUILD.md` for reproduction instructions.
+
+## Navigation
+
+- [Repository root](../README.md)
+- [Week 1: Exploratory Data Analysis](../week01-eda/assignment/README.md)
+- Week 3: To be added

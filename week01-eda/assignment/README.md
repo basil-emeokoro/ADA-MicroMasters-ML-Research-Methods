@@ -1,4 +1,4 @@
-# Sprint 01 Assignment – Exploratory Data Analysis (EDA)
+# Sprint 01 Assignment - Exploratory Data Analysis (EDA)
 
 This folder contains a complete, self-contained Week 1 assignment developed for the ADA Global Academy MicroMasters in Machine Learning and Research Methods.
 
@@ -67,6 +67,11 @@ The raw DHS dataset is not included in this repository because DHS microdata are
 
 Basil Oforbuike Emeokoro  
 ADA Global Academy - MicroMasters in Machine Learning and Research Methods
+
+## Navigation
+
+- [Repository root](../../README.md)
+- [Week 2: Regression Modelling](../../week02-regression-modelling/README.md)
 
 ## Complete Research Portfolio
 

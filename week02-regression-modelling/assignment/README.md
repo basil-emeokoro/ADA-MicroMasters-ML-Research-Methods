@@ -49,3 +49,9 @@ The workflow uses base R only and sets a fixed random seed for the train/test sp
 
 Basil Oforbuike Emeokoro  
 ADA Global Academy - MicroMasters in Machine Learning and Research Methods
+
+## Navigation
+
+- [Repository root](../../README.md)
+- [Week 2 overview](../README.md)
+- [Week 1: Exploratory Data Analysis](../../week01-eda/assignment/README.md)

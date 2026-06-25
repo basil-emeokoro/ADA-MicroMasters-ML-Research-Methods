@@ -29,6 +29,15 @@ Thumbs.db
 *.tmp
 ~$*
 
+# Local development governance and personal notes
+PROJECT_NOTES.md
+CODEX_INSTRUCTIONS.md
+AGENT_NOTES.md
+*prompt*.md
+*prompts*.md
+*conversation*.md
+*notes-local*.md
+
 # Local/source-class folders kept outside the public portfolio commit
 /Assignment/
 /Tasks/

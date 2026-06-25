@@ -8,7 +8,7 @@
   - Added MIT license metadata.
   - Added `CITATION.cff` for GitHub citation support.
   - Added GitHub Actions workflow to run the Week 1 R script against a synthetic reproducibility fixture.
-  - Added portfolio index, README badges, agent notes, and project notes for future weekly work.
+  - Added portfolio index, README badges, and repository metadata for future weekly work.
 - Analyses completed:
   - Cleaned WAZ and WHZ by converting DHS invalid codes `9996+` to missing and scaling valid scores by 100.
   - Recoded region, residence, wealth, mother education, father education, breastfeeding, and religion.
@@ -30,7 +30,6 @@
   - `.github/workflows/r-check.yml`
   - `LICENSE`
   - `CITATION.cff`
-  - `PROJECT_NOTES.md`
 
 ## Repository documentation updates
 

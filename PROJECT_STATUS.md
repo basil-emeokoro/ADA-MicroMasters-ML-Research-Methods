@@ -27,7 +27,7 @@
 - Dataset policy: restricted raw DHS data is not committed
 - CI status: passing for Week 1 and Week 2 R check workflows after synthetic fixture validation
 - Reproducibility status: Week 1 and Week 2 scripts run from their assignment folders; Week 2 also runs from the local Project folder
-- Documentation status: README, BUILD guide, changelog, project notes, citation metadata, citation catalogue, and release notes are present
+- Documentation status: README, BUILD guide, changelog, citation metadata, citation catalogue, release notes, and repository governance notes are present
 
 ## Known Issues
 
