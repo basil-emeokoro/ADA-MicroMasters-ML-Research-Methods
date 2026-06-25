@@ -1,0 +1,20 @@
+USA Housing findings: The multiple linear regression explains 91.8% of variation in Price (adjusted
+R-squared 0.918). Holding the other model variables constant, positive coefficients indicate higher
+expected price. The largest coefficient by scale is Avg_Area_House_Age, but variable units differ,
+so practical importance should be judged with context. Statistically significant predictors at p <
+0.05 are: Area_Population, Avg_Area_House_Age, Avg_Area_Income, Avg_Area_Number_of_Rooms. Diabetes
+readmission findings: The logistic model estimates the probability of readmission. Odds ratios
+above 1 indicate higher odds of readmission, while odds ratios below 1 indicate lower odds. At
+threshold 0.5, test accuracy is 61.8%, sensitivity is 38.9%, specificity is 81.4%, and manual AUC
+is 0.651. Statistically significant predictors at p < 0.05 include: age[10-20), age[20-30),
+age[30-40), age[40-50), age[50-60), age[60-70), age[70-80), age[80-90), genderMale,
+num_lab_procedures, num_medications, num_procedures, number_diagnoses, number_emergency,
+number_inpatient, number_outpatient, raceCaucasian, raceOther, raceUnknown, time_in_hospital.
+Limitations: Both analyses are observational and should not be interpreted causally. The housing
+dataset uses area-level variables, not full property-level appraisal data. The diabetes model uses
+coded administrative fields selectively; high-cardinality specialty and *_id variables can create
+unstable or hard-to-interpret coefficients. Classification at a 0.5 threshold may not be optimal
+for clinical readmission screening. Recommended next analytical steps: Next steps include
+validating models on external data, testing nonlinear effects and interactions, evaluating
+alternative probability thresholds for readmission, and comparing base regression with regularized
+or tree-based models after documenting package dependencies.

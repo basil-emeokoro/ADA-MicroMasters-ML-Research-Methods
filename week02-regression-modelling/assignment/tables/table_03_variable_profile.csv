@@ -1,0 +1,25 @@
+"Dataset","Variable","Type","Missing_N","Unique_N"
+"USA Housing","Avg_Area_Income","numeric",0,5000
+"USA Housing","Avg_Area_House_Age","numeric",0,5000
+"USA Housing","Avg_Area_Number_of_Rooms","numeric",0,5000
+"USA Housing","Avg_Area_Number_of_Bedrooms","numeric",0,255
+"USA Housing","Area_Population","numeric",0,5000
+"USA Housing","Price","numeric",0,5000
+"USA Housing","Address","character",0,5000
+"Diabetes readmission","time_in_hospital","integer",0,14
+"Diabetes readmission","num_lab_procedures","integer",0,118
+"Diabetes readmission","num_procedures","integer",0,7
+"Diabetes readmission","num_medications","integer",0,75
+"Diabetes readmission","number_outpatient","integer",0,39
+"Diabetes readmission","number_emergency","integer",0,33
+"Diabetes readmission","number_inpatient","integer",0,21
+"Diabetes readmission","number_diagnoses","integer",0,16
+"Diabetes readmission","race","factor",0,6
+"Diabetes readmission","gender","factor",0,3
+"Diabetes readmission","age","factor",0,10
+"Diabetes readmission","admission_type_id","integer",0,8
+"Diabetes readmission","discharge_disposition_id","integer",0,26
+"Diabetes readmission","admission_source_id","integer",0,17
+"Diabetes readmission","medical_specialty","factor",0,73
+"Diabetes readmission","readmitted_binary","numeric",0,2
+"Diabetes readmission","readmitted_factor","factor",0,2

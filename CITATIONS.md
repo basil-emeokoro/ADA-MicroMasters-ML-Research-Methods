@@ -30,11 +30,29 @@ This catalogue records the datasets, software, and standards used in the ADA Mic
 - Usage restrictions: Course materials should be used according to programme rules and should not be redistributed if restricted.
 - Citation format: Attribute assignment prompts, rubrics, and class-provided materials to ADA Global Academy where required.
 
+### USA Housing Dataset
+
+- Name: USA Housing dataset
+- Source: Week 2 assignment materials
+- Weeks used: Week 2
+- Usage restrictions: Course-provided dataset; do not redistribute outside permitted academic or portfolio use unless the original licence permits it.
+- Repository handling: Raw CSV is not committed. The Week 2 script expects `USA_Housing.csv` locally.
+- Citation format: Attribute to the dataset source supplied in the ADA Global Academy Week 2 assignment materials.
+
+### Diabetes Readmission Dataset
+
+- Name: Clean diabetes readmission dataset (`clean_diabetes.csv`)
+- Source: Week 2 assignment materials
+- Weeks used: Week 2
+- Usage restrictions: Course-provided dataset; do not redistribute outside permitted academic or portfolio use unless the original licence permits it.
+- Repository handling: Raw CSV is not committed. The Week 2 script expects `clean_diabetes.csv` locally.
+- Citation format: Attribute to the dataset source supplied in the ADA Global Academy Week 2 assignment materials.
+
 ## Software
 
 ### R
 
-- Role: Week 1 data cleaning, statistical summaries, figure generation, report generation, and reproducibility metadata.
+- Role: Week 1 and Week 2 data cleaning, statistical summaries, modelling, figure generation, report generation, and reproducibility metadata.
 - URL: https://www.r-project.org/
 - Tested locally with: R 4.5.2
 - CI environment: GitHub Actions R release
@@ -42,7 +60,7 @@ This catalogue records the datasets, software, and standards used in the ADA Mic
 
 ## Packages
 
-Week 1 is intentionally implemented with base R and does not require external CRAN packages. Future weeks should add major package citations here when they become part of the reproducible workflow.
+Weeks 1 and 2 are intentionally implemented with base R and do not require external CRAN packages. Future weeks should add major package citations here when they become part of the reproducible workflow.
 
 ## Standards and Practices
 

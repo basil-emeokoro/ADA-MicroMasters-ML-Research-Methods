@@ -35,6 +35,7 @@ Thumbs.db
 /Assignment-Draft.docx
 /Assignment-Draft.pdf
 /Assignment-Draft.txt
+week01-eda/*.zip
 
 # Restricted or large Week 1 data files
 week01-eda/assignment/NGKR8BFL*.csv
@@ -44,3 +45,10 @@ week01-eda/resources/datasets/*.zip
 week01-eda/resources/datasets/*.sav
 !week01-eda/resources/datasets/README.md
 !week01-eda/resources/datasets/.gitkeep
+
+# Restricted or large Week 2 data files
+week02-regression-modelling/assignment/USA_Housing.csv
+week02-regression-modelling/assignment/clean_diabetes.csv
+week02-regression-modelling/assignment/data/*.csv
+week02-regression-modelling/resources/datasets/*.csv
+!week02-regression-modelling/resources/datasets/README.md

@@ -1,0 +1,5 @@
+"Predicted","Actual","N"
+"Not readmitted","Not readmitted",13387
+"Not readmitted","Readmitted",8602
+"Readmitted","Not readmitted",3064
+"Readmitted","Readmitted",5477

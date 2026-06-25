@@ -78,3 +78,96 @@ jobs:
       - name: Run Week 1 assignment script
         working-directory: week01-eda/assignment
         run: Rscript Sprint01_BasilEmeokoro.R
+
+  week02-r-script:
+    name: Week 2 R script
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "release"
+
+      - name: Create synthetic Week 2 fixtures
+        run: |
+          python - <<'PY'
+          import csv
+          import random
+          from pathlib import Path
+
+          random.seed(20260625)
+          out = Path("week02-regression-modelling/assignment/data")
+          out.mkdir(parents=True, exist_ok=True)
+
+          with (out / "USA_Housing.csv").open("w", newline="", encoding="utf-8") as f:
+              fields = [
+                  "Avg. Area Income", "Avg. Area House Age", "Avg. Area Number of Rooms",
+                  "Avg. Area Number of Bedrooms", "Area Population", "Price", "Address"
+              ]
+              writer = csv.DictWriter(f, fieldnames=fields)
+              writer.writeheader()
+              for i in range(320):
+                  income = 45000 + (i % 80) * 600 + random.gauss(0, 1200)
+                  age = 3 + (i % 20) * 0.18 + random.gauss(0, 0.2)
+                  rooms = 5 + (i % 25) * 0.08 + random.gauss(0, 0.12)
+                  bedrooms = 2.5 + (i % 12) * 0.1
+                  pop = 18000 + (i % 90) * 220 + random.gauss(0, 600)
+                  price = 50000 + income * 12 + age * 55000 + rooms * 80000 + pop * 2.3 + random.gauss(0, 25000)
+                  writer.writerow({
+                      "Avg. Area Income": round(income, 4),
+                      "Avg. Area House Age": round(age, 4),
+                      "Avg. Area Number of Rooms": round(rooms, 4),
+                      "Avg. Area Number of Bedrooms": round(bedrooms, 4),
+                      "Area Population": round(pop, 4),
+                      "Price": round(price, 4),
+                      "Address": f"{i} Synthetic Street"
+                  })
+
+          with (out / "clean_diabetes.csv").open("w", newline="", encoding="utf-8") as f:
+              fields = [
+                  "time_in_hospital", "num_lab_procedures", "num_procedures", "num_medications",
+                  "number_outpatient", "number_emergency", "number_inpatient", "number_diagnoses",
+                  "race", "gender", "age", "admission_type_id", "discharge_disposition_id",
+                  "admission_source_id", "medical_specialty", "readmitted_binary"
+              ]
+              writer = csv.DictWriter(f, fieldnames=fields)
+              writer.writeheader()
+              races = ["Caucasian", "AfricanAmerican", "Asian", "Hispanic"]
+              genders = ["Female", "Male"]
+              ages = ["[30-40)", "[40-50)", "[50-60)", "[60-70)", "[70-80)"]
+              specs = ["InternalMedicine", "Family/GeneralPractice", "Cardiology", "Unknown"]
+              for i in range(650):
+                  inpatient = i % 5
+                  time = 1 + (i % 12)
+                  meds = 5 + (i % 35)
+                  diagnoses = 3 + (i % 7)
+                  p = -2.0 + 0.22 * inpatient + 0.06 * time + 0.02 * meds + 0.09 * diagnoses + (0.25 if ages[i % len(ages)] in ("[60-70)", "[70-80)") else 0)
+                  prob = 1 / (1 + pow(2.718281828, -p))
+                  readmit = 1 if random.random() < prob else 0
+                  writer.writerow({
+                      "time_in_hospital": time,
+                      "num_lab_procedures": 20 + (i % 55),
+                      "num_procedures": i % 5,
+                      "num_medications": meds,
+                      "number_outpatient": i % 4,
+                      "number_emergency": i % 3,
+                      "number_inpatient": inpatient,
+                      "number_diagnoses": diagnoses,
+                      "race": races[i % len(races)],
+                      "gender": genders[i % len(genders)],
+                      "age": ages[i % len(ages)],
+                      "admission_type_id": (i % 4) + 1,
+                      "discharge_disposition_id": (i % 5) + 1,
+                      "admission_source_id": (i % 6) + 1,
+                      "medical_specialty": specs[i % len(specs)],
+                      "readmitted_binary": readmit,
+                  })
+          PY
+
+      - name: Run Week 2 assignment script
+        working-directory: week02-regression-modelling/assignment
+        run: Rscript Sprint02_BasilEmeokoro.R

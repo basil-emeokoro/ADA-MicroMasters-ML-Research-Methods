@@ -139,6 +139,8 @@ week01-eda/assignment/outputs/sessionInfo.txt
 
 The repository includes `.github/workflows/r-check.yml`. In CI, a small synthetic fixture is generated under `week01-eda/resources/datasets/` so the R script can be validated without committing restricted DHS data.
 
+Week 2 CI also creates synthetic `USA_Housing.csv` and `clean_diabetes.csv` fixtures under `week02-regression-modelling/assignment/data/` before running the regression modelling script. These fixtures validate workflow execution only; local assignment results should be reproduced with the official Week 2 datasets.
+
 ## Deterministic Output Check
 
 After running the script once, run it again and check:

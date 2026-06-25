@@ -1,0 +1,3 @@
+"Dataset","Rows","Columns","Target","Task"
+"USA Housing",5000,7,"Price","Multiple linear regression"
+"Diabetes readmission",101766,16,"readmitted_binary","Binary logistic regression"

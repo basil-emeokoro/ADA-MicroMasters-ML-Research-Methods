@@ -1,0 +1,9 @@
+"Dataset","Variable","N","Mean","SD","Min","Median","Max"
+"Diabetes readmission","time_in_hospital",101766,4.39598687184325,2.98510776747127,1,4,14
+"Diabetes readmission","num_lab_procedures",101766,43.0956409802881,19.6743622491421,1,44,132
+"Diabetes readmission","num_procedures",101766,1.33973036181043,1.70580697912116,0,1,6
+"Diabetes readmission","num_medications",101766,16.0218442308826,8.12756620916729,1,15,81
+"Diabetes readmission","number_outpatient",101766,0.369357152683607,1.26726509653268,0,0,42
+"Diabetes readmission","number_emergency",101766,0.197836212487471,0.930472268422464,0,0,76
+"Diabetes readmission","number_inpatient",101766,0.635565906098304,1.26286329009732,0,0,21
+"Diabetes readmission","number_diagnoses",101766,7.42260676453825,1.93360014499743,1,8,16

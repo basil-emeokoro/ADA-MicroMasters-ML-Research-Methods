@@ -1,0 +1,9 @@
+"Metric","Value"
+"Train N",71236
+"Test N",30530
+"Threshold",0.5
+"Accuracy",0.617884048476908
+"Sensitivity",0.38901910647063
+"Specificity",0.813749924016777
+"AUC",0.651258419684793
+"Readmitted test prevalence",0.461152964297412

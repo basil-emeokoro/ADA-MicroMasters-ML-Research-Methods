@@ -49,7 +49,25 @@
 
 ## Week 2
 
-- Planned.
+- Dataset: USA Housing dataset and clean diabetes readmission dataset, used locally for regression modelling.
+- Objective: complete one multiple linear regression model for house price and one logistic regression model for diabetes readmission.
+- Analyses completed:
+  - Documented dataset dimensions, variable types, missing values, duplicate rows, target variables, predictors, and excluded variables.
+  - Built a multiple linear regression model for `Price` using area income, house age, rooms, bedrooms, and population.
+  - Built a logistic regression model for `readmitted_binary` using hospital-stay, utilization, diagnosis, race, gender, and age predictors.
+  - Produced EDA figures, regression result tables, diagnostics, confusion matrix, AUC, prediction interval, and predicted probability example.
+- Major findings:
+  - Housing model R-squared: approximately 0.918.
+  - Diabetes test accuracy: approximately 0.618.
+  - Diabetes manual AUC: approximately 0.651.
+- Files created:
+  - `week02-regression-modelling/assignment/Sprint02_BasilEmeokoro.R`
+  - `week02-regression-modelling/assignment/Sprint02_BasilEmeokoro.pdf`
+  - `week02-regression-modelling/assignment/figures/`
+  - `week02-regression-modelling/assignment/tables/`
+  - `week02-regression-modelling/assignment/outputs/`
+  - `week02-regression-modelling/assignment/README.md`
+  - `week02-regression-modelling/assignment/BUILD.md`
 
 ## Week 3
 

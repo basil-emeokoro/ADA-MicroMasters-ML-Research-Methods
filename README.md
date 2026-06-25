@@ -15,7 +15,7 @@ The objective extends beyond completing weekly assignments. This monorepo docume
 | Week | Topic | Status | Main Output | Code | Report |
 | --- | --- | --- | --- | --- | --- |
 | Week 1 | Exploratory data analysis of Nigeria DHS child undernutrition | Complete | WAZ/WHZ EDA tables, figures, and PDF report | [R script](week01-eda/assignment/Sprint01_BasilEmeokoro.R) | [PDF](week01-eda/assignment/Sprint01_BasilEmeokoro.pdf) |
-| Week 2 | To be added | Planned | TBD | TBD | TBD |
+| Week 2 | Regression modelling: housing prices and diabetes readmission | Complete | Linear and logistic regression tables, figures, and PDF report | [R script](week02-regression-modelling/assignment/Sprint02_BasilEmeokoro.R) | [PDF](week02-regression-modelling/assignment/Sprint02_BasilEmeokoro.pdf) |
 | Week 3 | To be added | Planned | TBD | TBD | TBD |
 | Week 4 | To be added | Planned | TBD | TBD | TBD |
 | Week 5 | To be added | Planned | TBD | TBD | TBD |
