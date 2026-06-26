@@ -45,10 +45,23 @@ preview_all_figures()
 
 The workflow uses base R only and sets a fixed random seed for the train/test split. PDF metadata is normalized to reduce repeated-build churn.
 
+## Software Requirements
+
+- R, version 4.5 or later recommended
+- Base R only; no contributed packages are required
+
 ## Author
 
 Basil Oforbuike Emeokoro  
 ADA Global Academy - MicroMasters in Machine Learning and Research Methods
+
+## Complete Research Portfolio
+
+This assignment forms part of a larger 12-week research portfolio developed during the ADA Global Academy MicroMasters in Machine Learning and Research Methods.
+
+The complete repository, including subsequent weekly assignments, reproducibility resources, documentation, and project history, is available at:
+
+https://github.com/basil-emeokoro/ADA-MicroMasters-ML-Research-Methods
 
 ## Navigation
 

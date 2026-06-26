@@ -1,11 +1,17 @@
-# R
+#################################################
+# R Session and Project Artefacts
+#################################################
+
 .Rhistory
 .RData
 .Ruserdata
 .Rproj.user/
 *.Rproj
 
-# Python
+#################################################
+# Python Caches and Virtual Environments
+#################################################
+
 __pycache__/
 *.py[cod]
 *.pyo
@@ -16,20 +22,32 @@ __pycache__/
 venv/
 env/
 
-# Jupyter
+#################################################
+# Jupyter Notebook Checkpoints
+#################################################
+
 .ipynb_checkpoints/
 
-# VS Code
+#################################################
+# IDE Files
+#################################################
+
 .vscode/settings.json
 
-# OS and logs
+#################################################
+# Operating System, Logs, and Temporary Files
+#################################################
+
 .DS_Store
 Thumbs.db
 *.log
 *.tmp
 ~$*
 
-# Local development governance and personal notes
+#################################################
+# Local Development Governance and Personal Notes
+#################################################
+
 PROJECT_NOTES.md
 CODEX_INSTRUCTIONS.md
 AGENT_NOTES.md
@@ -38,15 +56,22 @@ AGENT_NOTES.md
 *conversation*.md
 *notes-local*.md
 
-# Local/source-class folders kept outside the public portfolio commit
+#################################################
+# Local Legacy, Source-Class, and Draft Folders
+#################################################
+
 /Assignment/
 /Tasks/
 /Assignment-Draft.docx
 /Assignment-Draft.pdf
 /Assignment-Draft.txt
+Week-*-Assignment-Basil-Emeokoro/
 week01-eda/*.zip
 
-# Restricted or large Week 1 data files
+#################################################
+# Restricted or Large Week 1 Dataset Files
+#################################################
+
 week01-eda/assignment/NGKR8BFL*.csv
 week01-eda/resources/datasets/*.csv
 week01-eda/resources/datasets/*.dta
@@ -55,7 +80,10 @@ week01-eda/resources/datasets/*.sav
 !week01-eda/resources/datasets/README.md
 !week01-eda/resources/datasets/.gitkeep
 
-# Restricted or large Week 2 data files
+#################################################
+# Restricted or Large Week 2 Dataset Files
+#################################################
+
 week02-regression-modelling/assignment/USA_Housing.csv
 week02-regression-modelling/assignment/clean_diabetes.csv
 week02-regression-modelling/assignment/data/*.csv
